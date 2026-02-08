@@ -647,6 +647,11 @@
         const POINTS_PER_PASSED_DAY = 5;
         const BONUS_IDEAL_WEEK = 20;
         const DEFAULT_ADMIN_PIN = '1234';
+        const DEFAULT_ADMIN_USERNAME = 'admin';
+        const DEFAULT_ADMIN_PASSWORD = 'admin123';
+        const MIN_USERNAME_LENGTH = 3;
+        const MIN_PASSWORD_LENGTH = 4;
+        const SESSION_USER_KEY = 'familyManagerSessionUserId';
         const DAYS_OF_WEEK = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
         const TIER_LABELS = {
             MIN: '⭐ Minimum',
@@ -710,6 +715,80 @@
             adminPin: normalizeAdminPin(settings?.adminPin)
         });
 
+        const normalizeUsername = (value) => String(value ?? '').trim().toLowerCase();
+
+        const isValidUsername = (value) => {
+            const username = normalizeUsername(value);
+            return username.length >= MIN_USERNAME_LENGTH && /^[a-z0-9._-]+$/i.test(username);
+        };
+
+        const createDefaultAdminUser = () => {
+            const now = new Date().toISOString();
+            return {
+                id: 'user-admin',
+                username: DEFAULT_ADMIN_USERNAME,
+                password: DEFAULT_ADMIN_PASSWORD,
+                role: 'admin',
+                childId: null,
+                isActive: true,
+                createdAt: now,
+                activatedAt: now,
+                lastLoginAt: null
+            };
+        };
+
+        const normalizeUsers = (users, children) => {
+            const sourceUsers = Array.isArray(users) ? users : [];
+            const childIds = new Set((Array.isArray(children) ? children : []).map(child => child.id));
+            const seenUsernames = new Set();
+            const normalized = [];
+
+            sourceUsers.forEach((user, index) => {
+                if (!user || typeof user !== 'object') return;
+
+                const username = normalizeUsername(user.username);
+                if (!username || seenUsernames.has(username)) return;
+
+                const role = user.role === 'admin' ? 'admin' : 'child';
+                const childId = role === 'child' && childIds.has(user.childId) ? user.childId : null;
+                const createdAt = user.createdAt || new Date().toISOString();
+                const isActive = role === 'admin' ? user.isActive !== false : !!user.isActive;
+
+                normalized.push({
+                    id: typeof user.id === 'string' && user.id ? user.id : `user-${Date.now()}-${index}`,
+                    username,
+                    password: String(user.password ?? ''),
+                    role,
+                    childId,
+                    isActive,
+                    createdAt,
+                    activatedAt: user.activatedAt || (isActive ? createdAt : null),
+                    lastLoginAt: user.lastLoginAt || null
+                });
+                seenUsernames.add(username);
+            });
+
+            if (!normalized.some(user => user.role === 'admin')) {
+                normalized.unshift(createDefaultAdminUser());
+            }
+
+            const hasActiveAdmin = normalized.some(user => user.role === 'admin' && user.isActive);
+            if (!hasActiveAdmin) {
+                const firstAdminIndex = normalized.findIndex(user => user.role === 'admin');
+                if (firstAdminIndex >= 0) {
+                    normalized[firstAdminIndex] = {
+                        ...normalized[firstAdminIndex],
+                        isActive: true,
+                        activatedAt: normalized[firstAdminIndex].activatedAt || new Date().toISOString()
+                    };
+                } else {
+                    normalized.unshift(createDefaultAdminUser());
+                }
+            }
+
+            return normalized;
+        };
+
         const playSuccessSound = () => {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
@@ -748,7 +827,8 @@
                         return {
                             ...parsed,
                             familyGoal: normalizeFamilyGoal(parsed.familyGoal),
-                            settings: normalizeAppSettings(parsed.settings)
+                            settings: normalizeAppSettings(parsed.settings),
+                            users: normalizeUsers(parsed.users, parsed.children)
                         };
                     }
                 } catch (error) {
@@ -809,6 +889,7 @@
                     bonusIdealWeek: BONUS_IDEAL_WEEK,
                     adminPin: DEFAULT_ADMIN_PIN
                 },
+                users: [createDefaultAdminUser()],
                 familyGoal: {
                     name: 'Wyjście na pizzę',
                     threshold: 200,
@@ -1007,13 +1088,25 @@
             const [data, setData] = useState(getInitialData());
             const [currentView, setCurrentView] = useState('home');
             const [selectedChildId, setSelectedChildId] = useState(null);
-            const [adminUnlocked, setAdminUnlocked] = useState(false);
             const [rewardModal, setRewardModal] = useState(null);
             const [pinInput, setPinInput] = useState('');
             const [toasts, setToasts] = useState([]);
+            const [currentUserId, setCurrentUserId] = useState(() => localStorage.getItem(SESSION_USER_KEY) || '');
             const today = getTodayDate();
             const selectedChild = data.children.find(c => c.id === selectedChildId) || null;
             const appSettings = normalizeAppSettings(data.settings);
+            const users = Array.isArray(data.users) ? data.users : [];
+            const currentUser = users.find(user => user.id === currentUserId && user.isActive) || null;
+            const canManageAdminPanel = currentUser?.role === 'admin';
+
+            const availableChildren = useMemo(() => {
+                if (!currentUser) return [];
+                if (currentUser.role === 'admin') return data.children;
+                if (currentUser.childId) {
+                    return data.children.filter(child => child.id === currentUser.childId);
+                }
+                return [];
+            }, [currentUser, data.children]);
 
             // Toast notification system
             const showToast = (title, message, type = 'info') => {
@@ -1034,6 +1127,29 @@
             useEffect(() => {
                 localStorage.setItem('familyManagerData', JSON.stringify(data));
             }, [data]);
+
+            useEffect(() => {
+                if (currentUserId) {
+                    localStorage.setItem(SESSION_USER_KEY, currentUserId);
+                } else {
+                    localStorage.removeItem(SESSION_USER_KEY);
+                }
+            }, [currentUserId]);
+
+            useEffect(() => {
+                if (!Array.isArray(data.users) || data.users.length === 0) {
+                    setData(prev => ({
+                        ...prev,
+                        users: normalizeUsers(prev.users, prev.children)
+                    }));
+                }
+            }, [data.users, data.children]);
+
+            useEffect(() => {
+                if (currentUserId && !currentUser) {
+                    setCurrentUserId('');
+                }
+            }, [currentUserId, currentUser]);
 
             // Update child data
             const updateChild = (updatedChild) => {
@@ -1114,12 +1230,115 @@
                 setRewardModal({ reward, childName });
             };
 
+            const loginUser = (credentials) => {
+                const username = normalizeUsername(credentials?.username);
+                const password = String(credentials?.password ?? '');
+                const matchedUser = users.find(user => user.username === username);
+
+                if (!matchedUser) {
+                    showToast('Logowanie nieudane', 'Nie ma takiego konta.', 'error');
+                    return false;
+                }
+                if (matchedUser.password !== password) {
+                    showToast('Logowanie nieudane', 'Nieprawidlowe haslo.', 'error');
+                    return false;
+                }
+                if (!matchedUser.isActive) {
+                    showToast('Konto oczekuje', 'Admin musi aktywowac konto.', 'info');
+                    return false;
+                }
+
+                setCurrentUserId(matchedUser.id);
+                setPinInput('');
+
+                if (matchedUser.role === 'child' && matchedUser.childId) {
+                    setSelectedChildId(matchedUser.childId);
+                    setCurrentView('child');
+                } else {
+                    setSelectedChildId(null);
+                    setCurrentView('home');
+                }
+
+                setData(prev => ({
+                    ...prev,
+                    users: (Array.isArray(prev.users) ? prev.users : []).map(user =>
+                        user.id === matchedUser.id
+                            ? { ...user, lastLoginAt: new Date().toISOString() }
+                            : user
+                    )
+                }));
+
+                showToast('Zalogowano', `Witaj ${matchedUser.username}`, 'success');
+                return true;
+            };
+
+            const registerUserRequest = (registrationData) => {
+                const username = normalizeUsername(registrationData?.username);
+                const password = String(registrationData?.password ?? '');
+                const confirmPassword = String(registrationData?.confirmPassword ?? '');
+                const childId = registrationData?.childId || null;
+
+                if (!isValidUsername(username)) {
+                    showToast('Niepoprawna nazwa', `Login musi miec min. ${MIN_USERNAME_LENGTH} znaki i tylko litery/cyfry/._-`, 'error');
+                    return false;
+                }
+                if (users.some(user => user.username === username)) {
+                    showToast('Login zajety', 'Wybierz inna nazwe uzytkownika.', 'error');
+                    return false;
+                }
+                if (password.length < MIN_PASSWORD_LENGTH) {
+                    showToast('Haslo za krotkie', `Haslo musi miec min. ${MIN_PASSWORD_LENGTH} znaki.`, 'error');
+                    return false;
+                }
+                if (password !== confirmPassword) {
+                    showToast('Hasla sie roznia', 'Powtorz poprawnie haslo.', 'error');
+                    return false;
+                }
+                if (childId && !data.children.some(child => child.id === childId)) {
+                    showToast('Blad profilu', 'Wybrany profil dziecka nie istnieje.', 'error');
+                    return false;
+                }
+
+                const now = new Date().toISOString();
+                const newUser = {
+                    id: `user-${Date.now()}`,
+                    username,
+                    password,
+                    role: 'child',
+                    childId,
+                    isActive: false,
+                    createdAt: now,
+                    activatedAt: null,
+                    lastLoginAt: null
+                };
+
+                setData(prev => ({
+                    ...prev,
+                    users: normalizeUsers([...(Array.isArray(prev.users) ? prev.users : []), newUser], prev.children)
+                }));
+
+                showToast('Konto utworzone', 'Konto oczekuje na aktywacje przez admina.', 'success');
+                return true;
+            };
+
+            const logoutUser = () => {
+                setCurrentUserId('');
+                setSelectedChildId(null);
+                setCurrentView('home');
+                setPinInput('');
+            };
+
             // Admin PIN check
             const checkAdminPin = () => {
+                if (!canManageAdminPanel) {
+                    showToast('Brak dostepu', 'Tylko konto admina moze otworzyc panel.', 'error');
+                    return;
+                }
                 if (pinInput === appSettings.adminPin) {
-                    setAdminUnlocked(true);
                     setCurrentView('admin');
                     setPinInput('');
+                } else {
+                    showToast('Bledny PIN', 'Sprobuj ponownie.', 'error');
                 }
             };
 
@@ -1129,54 +1348,86 @@
                 }
             }, [currentView, selectedChild]);
 
+            useEffect(() => {
+                if (currentView === 'admin' && !canManageAdminPanel) {
+                    setCurrentView('home');
+                }
+            }, [currentView, canManageAdminPanel]);
+
+            useEffect(() => {
+                if (
+                    currentUser &&
+                    currentUser.role === 'child' &&
+                    currentUser.childId &&
+                    selectedChildId !== currentUser.childId
+                ) {
+                    setSelectedChildId(currentUser.childId);
+                }
+            }, [currentUser, selectedChildId]);
+
             return (
                 <div style={{ minHeight: '100vh', padding: '20px' }}>
                     <ToastContainer toasts={toasts} removeToast={removeToast} />
-                    
-                    {currentView === 'home' && (
-                        <HomeScreen 
+
+                    {!currentUser ? (
+                        <AuthScreen
                             data={data}
-                            setCurrentView={setCurrentView}
-                            setSelectedChild={setSelectedChildId}
-                            setAdminUnlocked={setAdminUnlocked}
-                            setPinInput={setPinInput}
-                            pinInput={pinInput}
-                            checkAdminPin={checkAdminPin}
+                            onLogin={loginUser}
+                            onRegister={registerUserRequest}
                         />
+                    ) : (
+                        <>
+                            {currentView === 'home' && (
+                                <HomeScreen
+                                    data={data}
+                                    setCurrentView={setCurrentView}
+                                    setSelectedChild={setSelectedChildId}
+                                    setPinInput={setPinInput}
+                                    pinInput={pinInput}
+                                    checkAdminPin={checkAdminPin}
+                                    availableChildren={availableChildren}
+                                    currentUser={currentUser}
+                                    canManageAdminPanel={canManageAdminPanel}
+                                    onOpenAdmin={() => setCurrentView('admin')}
+                                    onLogout={logoutUser}
+                                />
+                            )}
+
+                            {currentView === 'child' && selectedChild && (
+                                <ChildPanel
+                                    childData={selectedChild}
+                                    data={data}
+                                    setCurrentView={setCurrentView}
+                                    addCompletion={addCompletion}
+                                    removeCompletion={removeCompletion}
+                                    updateChild={updateChild}
+                                    showRewardModal={showRewardModal}
+                                />
+                            )}
+
+                            {currentView === 'admin' && canManageAdminPanel && (
+                                <AdminPanel
+                                    data={data}
+                                    setData={setData}
+                                    setCurrentView={setCurrentView}
+                                    updateChild={updateChild}
+                                    approveCompletion={approveCompletion}
+                                    showToast={showToast}
+                                    currentUser={currentUser}
+                                />
+                            )}
+
+                            {currentView === 'leaderboard' && (
+                                <Leaderboard
+                                    data={data}
+                                    setCurrentView={setCurrentView}
+                                />
+                            )}
+                        </>
                     )}
-                    
-                    {currentView === 'child' && selectedChild && (
-                        <ChildPanel 
-                            childData={selectedChild}
-                            data={data}
-                            setCurrentView={setCurrentView}
-                            addCompletion={addCompletion}
-                            removeCompletion={removeCompletion}
-                            updateChild={updateChild}
-                            showRewardModal={showRewardModal}
-                        />
-                    )}
-                    
-                    {currentView === 'admin' && (
-                        <AdminPanel 
-                            data={data}
-                            setData={setData}
-                            setCurrentView={setCurrentView}
-                            updateChild={updateChild}
-                            approveCompletion={approveCompletion}
-                            showToast={showToast}
-                        />
-                    )}
-                    
-                    {currentView === 'leaderboard' && (
-                        <Leaderboard 
-                            data={data}
-                            setCurrentView={setCurrentView}
-                        />
-                    )}
-                    
-                    {rewardModal && (
-                        <RewardModal 
+
+                    {rewardModal && currentUser && (
+                        <RewardModal
                             reward={rewardModal.reward}
                             childName={rewardModal.childName}
                             onClose={() => setRewardModal(null)}
@@ -1186,8 +1437,159 @@
             );
         }
 
+        // ==================== AUTH SCREEN ====================
+        function AuthScreen({ data, onLogin, onRegister }) {
+            const [mode, setMode] = useState('login');
+            const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+            const [registerForm, setRegisterForm] = useState({
+                username: '',
+                password: '',
+                confirmPassword: '',
+                childId: data.children[0]?.id || ''
+            });
+
+            useEffect(() => {
+                setRegisterForm(prev => {
+                    const childExists = data.children.some(child => child.id === prev.childId);
+                    if (childExists) return prev;
+                    return { ...prev, childId: data.children[0]?.id || '' };
+                });
+            }, [data.children]);
+
+            const handleLogin = (event) => {
+                event.preventDefault();
+                const success = onLogin(loginForm);
+                if (success) {
+                    setLoginForm({ username: '', password: '' });
+                }
+            };
+
+            const handleRegister = (event) => {
+                event.preventDefault();
+                const success = onRegister(registerForm);
+                if (success) {
+                    setRegisterForm({
+                        username: '',
+                        password: '',
+                        confirmPassword: '',
+                        childId: data.children[0]?.id || ''
+                    });
+                    setMode('login');
+                }
+            };
+
+            return (
+                <div className="fade-in" style={{ maxWidth: '720px', margin: '0 auto', paddingTop: '20px' }}>
+                    <div className="glass-card" style={{ marginBottom: '20px', textAlign: 'center' }}>
+                        <h1 className="text-3xl text-bold mb-2">Family Manager</h1>
+                        <p style={{ opacity: 0.85 }}>Logowanie i rejestracja kont</p>
+                    </div>
+
+                    <div className="tabs" style={{ marginBottom: '20px' }}>
+                        <button
+                            className={`tab ${mode === 'login' ? 'active' : ''}`}
+                            onClick={() => setMode('login')}
+                        >
+                            Logowanie
+                        </button>
+                        <button
+                            className={`tab ${mode === 'register' ? 'active' : ''}`}
+                            onClick={() => setMode('register')}
+                        >
+                            Rejestracja
+                        </button>
+                    </div>
+
+                    {mode === 'login' && (
+                        <form className="glass-card" onSubmit={handleLogin}>
+                            <h2 className="text-2xl text-bold mb-3">Zaloguj sie</h2>
+                            <div style={{ marginBottom: '12px' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Login</label>
+                                <input
+                                    className="input"
+                                    value={loginForm.username}
+                                    onChange={(event) => setLoginForm(prev => ({ ...prev, username: event.target.value }))}
+                                    placeholder="np. admin"
+                                />
+                            </div>
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Haslo</label>
+                                <input
+                                    type="password"
+                                    className="input"
+                                    value={loginForm.password}
+                                    onChange={(event) => setLoginForm(prev => ({ ...prev, password: event.target.value }))}
+                                    placeholder="Twoje haslo"
+                                />
+                            </div>
+                            <button type="submit" className="btn btn-primary w-full">Zaloguj</button>
+
+                            <div style={{ marginTop: '14px', fontSize: '14px', opacity: 0.8 }}>
+                                Konto startowe admin: <strong>{DEFAULT_ADMIN_USERNAME}</strong> / <strong>{DEFAULT_ADMIN_PASSWORD}</strong>
+                            </div>
+                        </form>
+                    )}
+
+                    {mode === 'register' && (
+                        <form className="glass-card" onSubmit={handleRegister}>
+                            <h2 className="text-2xl text-bold mb-3">Utworz konto (czeka na aktywacje)</h2>
+                            <div style={{ marginBottom: '12px' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Login</label>
+                                <input
+                                    className="input"
+                                    value={registerForm.username}
+                                    onChange={(event) => setRegisterForm(prev => ({ ...prev, username: event.target.value }))}
+                                    placeholder="np. leo.konto"
+                                />
+                            </div>
+
+                            <div style={{ marginBottom: '12px' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Haslo</label>
+                                <input
+                                    type="password"
+                                    className="input"
+                                    value={registerForm.password}
+                                    onChange={(event) => setRegisterForm(prev => ({ ...prev, password: event.target.value }))}
+                                    placeholder={`Min. ${MIN_PASSWORD_LENGTH} znaki`}
+                                />
+                            </div>
+
+                            <div style={{ marginBottom: '12px' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Powtorz haslo</label>
+                                <input
+                                    type="password"
+                                    className="input"
+                                    value={registerForm.confirmPassword}
+                                    onChange={(event) => setRegisterForm(prev => ({ ...prev, confirmPassword: event.target.value }))}
+                                    placeholder="Powtorz haslo"
+                                />
+                            </div>
+
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Powiaz profil dziecka</label>
+                                <select
+                                    className="select"
+                                    value={registerForm.childId}
+                                    onChange={(event) => setRegisterForm(prev => ({ ...prev, childId: event.target.value }))}
+                                >
+                                    <option value="">Brak przypisania</option>
+                                    {data.children.map(child => (
+                                        <option key={child.id} value={child.id}>
+                                            {child.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <button type="submit" className="btn btn-success w-full">Utworz konto</button>
+                        </form>
+                    )}
+                </div>
+            );
+        }
+
         // ==================== HOME SCREEN ====================
-        function HomeScreen({ data, setCurrentView, setSelectedChild, setAdminUnlocked, setPinInput, pinInput, checkAdminPin }) {
+        function HomeScreen({ data, setCurrentView, setSelectedChild, setPinInput, pinInput, checkAdminPin, availableChildren, currentUser, canManageAdminPanel, onOpenAdmin, onLogout }) {
             const [showPinModal, setShowPinModal] = useState(false);
             const [logoHoldTimer, setLogoHoldTimer] = useState(null);
             const totalPoints = data.children.reduce((sum, c) => sum + c.pointsTotal, 0);
@@ -1196,6 +1598,7 @@
             const goalName = data.familyGoal?.name || 'Cel rodzinny';
 
             const handleLogoPress = () => {
+                if (!canManageAdminPanel) return;
                 const timer = setTimeout(() => {
                     setShowPinModal(true);
                 }, 2000);
@@ -1212,11 +1615,11 @@
             return (
                 <div className="fade-in">
                     <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                        <div 
-                            style={{ 
-                                fontSize: '64px', 
+                        <div
+                            style={{
+                                fontSize: '64px',
                                 marginBottom: '16px',
-                                cursor: 'pointer',
+                                cursor: canManageAdminPanel ? 'pointer' : 'default',
                                 userSelect: 'none'
                             }}
                             onMouseDown={handleLogoPress}
@@ -1225,15 +1628,24 @@
                             onTouchStart={handleLogoPress}
                             onTouchEnd={handleLogoRelease}
                         >
-                            🏠
+                            ??
                         </div>
                         <h1 className="text-3xl text-bold" style={{ marginBottom: '8px' }}>Family Manager</h1>
-                        <p className="text-lg" style={{ opacity: 0.8 }}>Wybierz swój profil</p>
+                        <p className="text-lg" style={{ opacity: 0.8 }}>
+                            {currentUser?.role === 'admin' ? 'Wybierz swoj profil' : 'Wybierz profil dziecka'}
+                        </p>
+                        <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                            <span className="badge badge-passed">Zalogowany: {currentUser?.username}</span>
+                            <span className="badge badge-failed">Rola: {currentUser?.role}</span>
+                            <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '14px' }} onClick={onLogout}>
+                                Wyloguj
+                            </button>
+                        </div>
                     </div>
 
                     <div className="grid grid-2" style={{ maxWidth: '800px', margin: '0 auto' }}>
-                        {data.children.map(child => (
-                            <div 
+                        {availableChildren.map(child => (
+                            <div
                                 key={child.id}
                                 className="glass-card"
                                 style={{ cursor: 'pointer', textAlign: 'center' }}
@@ -1260,24 +1672,35 @@
                         ))}
                     </div>
 
+                    {availableChildren.length === 0 && (
+                        <div className="glass-card" style={{ maxWidth: '700px', margin: '20px auto 0', textAlign: 'center' }}>
+                            Brak przypisanego profilu dziecka. Popros admina o przypisanie konta.
+                        </div>
+                    )}
+
                     <div style={{ textAlign: 'center', marginTop: '40px', display: 'flex', gap: '16px', justifyContent: 'center' }}>
-                        <button 
+                        <button
                             className="btn btn-primary"
                             onClick={() => setCurrentView('leaderboard')}
                         >
-                            🏆 Ranking
+                            ?? Ranking
                         </button>
+                        {canManageAdminPanel && (
+                            <button className="btn btn-success" onClick={onOpenAdmin}>
+                                Panel admina
+                            </button>
+                        )}
                     </div>
 
                     {/* Family Goal Progress */}
                     <div className="glass-card" style={{ maxWidth: '600px', margin: '40px auto 0' }}>
-                        <h3 className="text-xl text-bold mb-2">🎯 Cel Rodzinny</h3>
+                        <h3 className="text-xl text-bold mb-2">?? Cel Rodzinny</h3>
                         <p className="mb-2">{goalName}</p>
                         <div className="progress-bar">
-                            <div 
+                            <div
                                 className="progress-fill"
-                                style={{ 
-                                    width: `${goalProgress}%` 
+                                style={{
+                                    width: `${goalProgress}%`
                                 }}
                             >
                                 {totalPoints} / {goalThreshold}
@@ -1285,12 +1708,12 @@
                         </div>
                     </div>
 
-                    {showPinModal && (
+                    {showPinModal && canManageAdminPanel && (
                         <div className="modal-overlay" onClick={() => setShowPinModal(false)}>
                             <div className="modal" onClick={(e) => e.stopPropagation()}>
                                 <h2 className="text-2xl text-bold mb-3 text-center">Panel Administratora</h2>
-                                <p className="mb-3 text-center">Wprowadź PIN administratora</p>
-                                <input 
+                                <p className="mb-3 text-center">Wprowadz PIN administratora</p>
+                                <input
                                     type="password"
                                     className="input mb-2"
                                     value={pinInput}
@@ -1300,14 +1723,14 @@
                                     autoFocus
                                 />
                                 <div style={{ display: 'flex', gap: '12px' }}>
-                                    <button 
+                                    <button
                                         className="btn btn-secondary"
                                         style={{ flex: 1 }}
                                         onClick={() => setShowPinModal(false)}
                                     >
                                         Anuluj
                                     </button>
-                                    <button 
+                                    <button
                                         className="btn btn-primary"
                                         style={{ flex: 1 }}
                                         onClick={() => {
@@ -1315,7 +1738,7 @@
                                             setShowPinModal(false);
                                         }}
                                     >
-                                        Potwierdź
+                                        Potwierdz
                                     </button>
                                 </div>
                             </div>
@@ -1324,7 +1747,6 @@
                 </div>
             );
         }
-
         // ==================== CHILD PANEL ====================
         function ChildPanel({ childData, data, setCurrentView, addCompletion, removeCompletion, updateChild, showRewardModal }) {
             const today = getTodayDate();
@@ -1555,12 +1977,20 @@
                 if (!confirm('Czy na pewno chcesz usunąć to dziecko? Wszystkie dane zostaną utracone.')) return;
 
                 const child = data.children.find(c => c.id === childId);
-                setData(prev => ({
-                    ...prev,
-                    children: prev.children.filter(c => c.id !== childId),
-                    tasks: prev.tasks.filter(t => t.childId !== childId),
-                    completions: prev.completions.filter(c => c.childId !== childId)
-                }));
+                setData(prev => {
+                    const nextChildren = prev.children.filter(c => c.id !== childId);
+                    const nextUsers = (Array.isArray(prev.users) ? prev.users : []).map(user =>
+                        user.childId === childId ? { ...user, childId: null } : user
+                    );
+
+                    return {
+                        ...prev,
+                        children: nextChildren,
+                        tasks: prev.tasks.filter(t => t.childId !== childId),
+                        completions: prev.completions.filter(c => c.childId !== childId),
+                        users: normalizeUsers(nextUsers, nextChildren)
+                    };
+                });
                 showToast('Usunięto', `Dziecko ${child?.name} zostało usunięte`, 'info');
             };
 
@@ -2335,7 +2765,8 @@
                         const normalizedImportedData = {
                             ...importedData,
                             familyGoal: normalizeFamilyGoal(importedData.familyGoal),
-                            settings: normalizeAppSettings(importedData.settings)
+                            settings: normalizeAppSettings(importedData.settings),
+                            users: normalizeUsers(importedData.users, importedData.children)
                         };
 
                         setData(normalizedImportedData);
@@ -2649,9 +3080,342 @@
             );
         }
 
+        // ==================== USERS MANAGEMENT ====================
+        function UsersManagement({ data, setData, showToast, currentUser }) {
+            const users = Array.isArray(data.users) ? data.users : [];
+            const pendingUsers = users.filter(user => !user.isActive);
+            const activeAdmins = users.filter(user => user.role === 'admin' && user.isActive);
+            const [isAdding, setIsAdding] = useState(false);
+            const [passwordUpdates, setPasswordUpdates] = useState({});
+            const [formData, setFormData] = useState({
+                username: '',
+                password: '',
+                role: 'child',
+                childId: data.children[0]?.id || '',
+                isActive: true
+            });
+
+            useEffect(() => {
+                if (formData.role !== 'child') return;
+                const childExists = data.children.some(child => child.id === formData.childId);
+                if (!childExists) {
+                    setFormData(prev => ({ ...prev, childId: data.children[0]?.id || '' }));
+                }
+            }, [formData.role, formData.childId, data.children]);
+
+            const resetForm = () => {
+                setFormData({
+                    username: '',
+                    password: '',
+                    role: 'child',
+                    childId: data.children[0]?.id || '',
+                    isActive: true
+                });
+            };
+
+            const handleAddUser = () => {
+                const username = normalizeUsername(formData.username);
+                const password = String(formData.password ?? '');
+                const role = formData.role === 'admin' ? 'admin' : 'child';
+                const childId = role === 'child' ? (formData.childId || null) : null;
+
+                if (!isValidUsername(username)) {
+                    showToast('Bledny login', `Login musi miec min. ${MIN_USERNAME_LENGTH} znaki i tylko litery/cyfry/._-`, 'error');
+                    return;
+                }
+                if (users.some(user => user.username === username)) {
+                    showToast('Login zajety', 'Wybierz inna nazwe konta.', 'error');
+                    return;
+                }
+                if (password.length < MIN_PASSWORD_LENGTH) {
+                    showToast('Haslo za krotkie', `Haslo musi miec min. ${MIN_PASSWORD_LENGTH} znaki.`, 'error');
+                    return;
+                }
+                if (childId && !data.children.some(child => child.id === childId)) {
+                    showToast('Brak profilu', 'Wybrany profil dziecka nie istnieje.', 'error');
+                    return;
+                }
+
+                const now = new Date().toISOString();
+                const shouldBeActive = role === 'admin' ? true : !!formData.isActive;
+                const newUser = {
+                    id: `user-${Date.now()}`,
+                    username,
+                    password,
+                    role,
+                    childId,
+                    isActive: shouldBeActive,
+                    createdAt: now,
+                    activatedAt: shouldBeActive ? now : null,
+                    lastLoginAt: null
+                };
+
+                setData(prev => ({
+                    ...prev,
+                    users: normalizeUsers([...(Array.isArray(prev.users) ? prev.users : []), newUser], prev.children)
+                }));
+
+                showToast('Dodano konto', `Konto ${username} zostalo dodane.`, 'success');
+                setIsAdding(false);
+                resetForm();
+            };
+
+            const handleToggleActive = (user) => {
+                if (user.id === currentUser?.id && user.isActive) {
+                    showToast('Blad', 'Nie mozesz dezaktywowac swojego konta.', 'error');
+                    return;
+                }
+                if (user.role === 'admin' && user.isActive && activeAdmins.length <= 1) {
+                    showToast('Blad', 'Musi pozostac co najmniej jedno aktywne konto admina.', 'error');
+                    return;
+                }
+
+                const nextActiveState = !user.isActive;
+                setData(prev => ({
+                    ...prev,
+                    users: (Array.isArray(prev.users) ? prev.users : []).map(item =>
+                        item.id === user.id
+                            ? {
+                                ...item,
+                                isActive: nextActiveState,
+                                activatedAt: nextActiveState ? (item.activatedAt || new Date().toISOString()) : item.activatedAt
+                            }
+                            : item
+                    )
+                }));
+
+                showToast(
+                    nextActiveState ? 'Konto aktywne' : 'Konto wstrzymane',
+                    `${user.username}: ${nextActiveState ? 'aktywowane' : 'dezaktywowane'}.`,
+                    'info'
+                );
+            };
+
+            const handleDeleteUser = (user) => {
+                if (user.id === currentUser?.id) {
+                    showToast('Blad', 'Nie mozesz usunac aktualnie zalogowanego konta.', 'error');
+                    return;
+                }
+                if (user.role === 'admin' && user.isActive && activeAdmins.length <= 1) {
+                    showToast('Blad', 'Musi pozostac co najmniej jedno aktywne konto admina.', 'error');
+                    return;
+                }
+                if (!confirm(`Czy na pewno usunac konto ${user.username}?`)) return;
+
+                setData(prev => ({
+                    ...prev,
+                    users: normalizeUsers((Array.isArray(prev.users) ? prev.users : []).filter(item => item.id !== user.id), prev.children)
+                }));
+                showToast('Usunieto konto', `Konto ${user.username} zostalo usuniete.`, 'info');
+            };
+
+            const handlePasswordChange = (user) => {
+                const newPassword = String(passwordUpdates[user.id] ?? '');
+                if (newPassword.length < MIN_PASSWORD_LENGTH) {
+                    showToast('Haslo za krotkie', `Nowe haslo musi miec min. ${MIN_PASSWORD_LENGTH} znaki.`, 'error');
+                    return;
+                }
+
+                setData(prev => ({
+                    ...prev,
+                    users: (Array.isArray(prev.users) ? prev.users : []).map(item =>
+                        item.id === user.id ? { ...item, password: newPassword } : item
+                    )
+                }));
+                setPasswordUpdates(prev => ({ ...prev, [user.id]: '' }));
+                showToast('Haslo zmienione', `Haslo dla ${user.username} zostalo zmienione.`, 'success');
+            };
+
+            const getChildName = (childId) => {
+                if (!childId) return '-';
+                const child = data.children.find(item => item.id === childId);
+                return child?.name || '(usuniety profil)';
+            };
+
+            const sortedUsers = [...users].sort((a, b) => {
+                if (a.role !== b.role) return a.role === 'admin' ? -1 : 1;
+                return a.username.localeCompare(b.username);
+            });
+
+            return (
+                <div>
+                    <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h2 className="text-2xl text-bold">Uzytkownicy</h2>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => {
+                                setIsAdding(prev => !prev);
+                                if (isAdding) resetForm();
+                            }}
+                        >
+                            {isAdding ? 'Anuluj' : '+ Dodaj konto'}
+                        </button>
+                    </div>
+
+                    <div className="glass-card mb-3">
+                        <h3 className="text-xl text-bold mb-2">Statystyki kont</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
+                            <div>
+                                <div className="text-3xl text-bold">{users.length}</div>
+                                <div style={{ opacity: 0.8 }}>Wszystkie konta</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl text-bold">{users.filter(user => user.isActive).length}</div>
+                                <div style={{ opacity: 0.8 }}>Aktywne</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl text-bold">{pendingUsers.length}</div>
+                                <div style={{ opacity: 0.8 }}>Oczekujace</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl text-bold">{users.filter(user => user.role === 'admin').length}</div>
+                                <div style={{ opacity: 0.8 }}>Admini</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {isAdding && (
+                        <div className="glass-card mb-3">
+                            <h3 className="text-xl text-bold mb-2">Nowe konto</h3>
+
+                            <div style={{ marginBottom: '12px' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Login</label>
+                                <input
+                                    className="input"
+                                    value={formData.username}
+                                    onChange={(event) => setFormData(prev => ({ ...prev, username: event.target.value }))}
+                                    placeholder="np. konto.mia"
+                                />
+                            </div>
+
+                            <div style={{ marginBottom: '12px' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Haslo</label>
+                                <input
+                                    type="password"
+                                    className="input"
+                                    value={formData.password}
+                                    onChange={(event) => setFormData(prev => ({ ...prev, password: event.target.value }))}
+                                    placeholder={`Min. ${MIN_PASSWORD_LENGTH} znakow`}
+                                />
+                            </div>
+
+                            <div style={{ marginBottom: '12px' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Rola</label>
+                                <select
+                                    className="select"
+                                    value={formData.role}
+                                    onChange={(event) => setFormData(prev => ({ ...prev, role: event.target.value }))}
+                                >
+                                    <option value="child">Dziecko</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+
+                            {formData.role === 'child' && (
+                                <div style={{ marginBottom: '12px' }}>
+                                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Profil dziecka</label>
+                                    <select
+                                        className="select"
+                                        value={formData.childId}
+                                        onChange={(event) => setFormData(prev => ({ ...prev, childId: event.target.value }))}
+                                    >
+                                        <option value="">Brak przypisania</option>
+                                        {data.children.map(child => (
+                                            <option key={child.id} value={child.id}>
+                                                {child.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            {formData.role === 'child' && (
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.isActive}
+                                        onChange={(event) => setFormData(prev => ({ ...prev, isActive: event.target.checked }))}
+                                    />
+                                    Aktywne od razu (bez czekania na akceptacje)
+                                </label>
+                            )}
+
+                            <button className="btn btn-success w-full" onClick={handleAddUser}>
+                                Zapisz konto
+                            </button>
+                        </div>
+                    )}
+
+                    {pendingUsers.length > 0 && (
+                        <div className="glass-card mb-3">
+                            <h3 className="text-xl text-bold mb-2">Konta oczekujace na aktywacje</h3>
+                            {pendingUsers.map(user => (
+                                <div key={user.id} className="task-item">
+                                    <div style={{ flex: 1 }}>
+                                        <div className="text-bold">{user.username}</div>
+                                        <div style={{ fontSize: '13px', opacity: 0.8 }}>
+                                            Rola: {user.role} | Profil: {getChildName(user.childId)}
+                                        </div>
+                                    </div>
+                                    <button className="btn btn-success" style={{ padding: '8px 12px' }} onClick={() => handleToggleActive(user)}>
+                                        Aktywuj
+                                    </button>
+                                    <button className="btn btn-danger" style={{ padding: '8px 12px' }} onClick={() => handleDeleteUser(user)}>
+                                        Usun
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="glass-card">
+                        <h3 className="text-xl text-bold mb-2">Lista kont</h3>
+                        {sortedUsers.map(user => (
+                            <div key={user.id} className="task-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '10px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                    <div>
+                                        <div className="text-bold">{user.username}</div>
+                                        <div style={{ fontSize: '13px', opacity: 0.8 }}>
+                                            Rola: {user.role} | Profil: {getChildName(user.childId)} | Status: {user.isActive ? 'aktywne' : 'oczekuje'}
+                                        </div>
+                                        <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                                            Ostatnie logowanie: {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('pl-PL') : '-'}
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        <button className="btn btn-secondary" style={{ padding: '8px 12px' }} onClick={() => handleToggleActive(user)}>
+                                            {user.isActive ? 'Dezaktywuj' : 'Aktywuj'}
+                                        </button>
+                                        <button className="btn btn-danger" style={{ padding: '8px 12px' }} onClick={() => handleDeleteUser(user)}>
+                                            Usun
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    <input
+                                        type="password"
+                                        className="input"
+                                        style={{ flex: 1, minWidth: '180px' }}
+                                        value={passwordUpdates[user.id] || ''}
+                                        onChange={(event) => setPasswordUpdates(prev => ({ ...prev, [user.id]: event.target.value }))}
+                                        placeholder="Nowe haslo"
+                                    />
+                                    <button className="btn btn-primary" style={{ padding: '8px 12px' }} onClick={() => handlePasswordChange(user)}>
+                                        Zmien haslo
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
         // ==================== ADMIN PANEL ====================
-        function AdminPanel({ data, setData, setCurrentView, updateChild, approveCompletion, showToast }) {
+        function AdminPanel({ data, setData, setCurrentView, updateChild, approveCompletion, showToast, currentUser }) {
             const [activeTab, setActiveTab] = useState('pending');
+            const pendingUserApprovals = (Array.isArray(data.users) ? data.users : []).filter(user => !user.isActive).length;
 
             // Get pending approvals
             const pendingApprovals = data.completions
@@ -2704,6 +3468,12 @@
                             onClick={() => setActiveTab('children')}
                         >
                             Zarządzaj dziećmi
+                        </button>
+                        <button
+                            className={`tab ${activeTab === 'users' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('users')}
+                        >
+                            Uzytkownicy ({pendingUserApprovals})
                         </button>
                         <button 
                             className={`tab ${activeTab === 'tasks' ? 'active' : ''}`}
@@ -2772,6 +3542,15 @@
                             data={data}
                             setData={setData}
                             showToast={showToast}
+                        />
+                    )}
+
+                    {activeTab === 'users' && (
+                        <UsersManagement
+                            data={data}
+                            setData={setData}
+                            showToast={showToast}
+                            currentUser={currentUser}
                         />
                     )}
 
