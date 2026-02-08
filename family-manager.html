@@ -1591,6 +1591,7 @@
         function HomeScreen({ data, setCurrentView, setSelectedChild, setPinInput, pinInput, checkAdminPin, availableChildren, currentUser, canManageAdminPanel, onLogout }) {
             const [showPinModal, setShowPinModal] = useState(false);
             const [logoHoldTimer, setLogoHoldTimer] = useState(null);
+            const [accountMenuOpen, setAccountMenuOpen] = useState(false);
             const totalPoints = data.children.reduce((sum, c) => sum + c.pointsTotal, 0);
             const goalThreshold = normalizeFamilyGoalThreshold(data.familyGoal?.threshold);
             const goalProgress = Math.min(100, (totalPoints / goalThreshold) * 100);
@@ -1613,40 +1614,62 @@
 
             return (
                 <div className="fade-in">
+                    {accountMenuOpen && (
+                        <div
+                            style={{ position: 'fixed', inset: 0, zIndex: 49 }}
+                            onClick={() => setAccountMenuOpen(false)}
+                        />
+                    )}
+
                     <div
-                        className="glass-card"
                         style={{
                             position: 'fixed',
                             top: '16px',
                             right: '16px',
-                            zIndex: 50,
-                            width: 'min(380px, calc(100vw - 32px))',
-                            padding: '14px'
+                            zIndex: 50
                         }}
                     >
-                        <div style={{ fontSize: '13px', opacity: 0.8, marginBottom: '8px' }}>Konto</div>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                            <span className="badge badge-passed">Zalogowany: {currentUser?.username}</span>
-                            <span className="badge badge-failed">Rola: {currentUser?.role}</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                            {canManageAdminPanel && (
-                                <button
-                                    className="btn btn-success"
-                                    style={{ padding: '8px 12px', fontSize: '14px' }}
-                                    onClick={() => setShowPinModal(true)}
-                                >
-                                    Panel admina
-                                </button>
-                            )}
-                            <button
-                                className="btn btn-secondary"
-                                style={{ padding: '8px 12px', fontSize: '14px' }}
-                                onClick={onLogout}
-                            >
-                                Wyloguj
-                            </button>
-                        </div>
+                        <button
+                            className="btn btn-secondary"
+                            style={{ padding: '10px 14px', fontSize: '14px' }}
+                            onClick={() => setAccountMenuOpen(prev => !prev)}
+                        >
+                            Konto
+                        </button>
+
+                        {accountMenuOpen && (
+                            <div className="glass-card" style={{ marginTop: '8px', padding: '14px', width: 'min(360px, calc(100vw - 32px))' }}>
+                                <div style={{ fontSize: '13px', opacity: 0.8, marginBottom: '8px' }}>Konto</div>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                                    <span className="badge badge-passed">Zalogowany: {currentUser?.username}</span>
+                                    <span className="badge badge-failed">Rola: {currentUser?.role}</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    {canManageAdminPanel && (
+                                        <button
+                                            className="btn btn-success"
+                                            style={{ padding: '8px 12px', fontSize: '14px' }}
+                                            onClick={() => {
+                                                setAccountMenuOpen(false);
+                                                setShowPinModal(true);
+                                            }}
+                                        >
+                                            Panel admina
+                                        </button>
+                                    )}
+                                    <button
+                                        className="btn btn-secondary"
+                                        style={{ padding: '8px 12px', fontSize: '14px' }}
+                                        onClick={() => {
+                                            setAccountMenuOpen(false);
+                                            onLogout();
+                                        }}
+                                    >
+                                        Wyloguj
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div style={{ textAlign: 'center', marginBottom: '40px' }}>
