@@ -1388,7 +1388,6 @@
                                     availableChildren={availableChildren}
                                     currentUser={currentUser}
                                     canManageAdminPanel={canManageAdminPanel}
-                                    onOpenAdmin={() => setCurrentView('admin')}
                                     onLogout={logoutUser}
                                 />
                             )}
@@ -1589,7 +1588,7 @@
         }
 
         // ==================== HOME SCREEN ====================
-        function HomeScreen({ data, setCurrentView, setSelectedChild, setPinInput, pinInput, checkAdminPin, availableChildren, currentUser, canManageAdminPanel, onOpenAdmin, onLogout }) {
+        function HomeScreen({ data, setCurrentView, setSelectedChild, setPinInput, pinInput, checkAdminPin, availableChildren, currentUser, canManageAdminPanel, onLogout }) {
             const [showPinModal, setShowPinModal] = useState(false);
             const [logoHoldTimer, setLogoHoldTimer] = useState(null);
             const totalPoints = data.children.reduce((sum, c) => sum + c.pointsTotal, 0);
@@ -1614,6 +1613,42 @@
 
             return (
                 <div className="fade-in">
+                    <div
+                        className="glass-card"
+                        style={{
+                            position: 'fixed',
+                            top: '16px',
+                            right: '16px',
+                            zIndex: 50,
+                            width: 'min(380px, calc(100vw - 32px))',
+                            padding: '14px'
+                        }}
+                    >
+                        <div style={{ fontSize: '13px', opacity: 0.8, marginBottom: '8px' }}>Konto</div>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                            <span className="badge badge-passed">Zalogowany: {currentUser?.username}</span>
+                            <span className="badge badge-failed">Rola: {currentUser?.role}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {canManageAdminPanel && (
+                                <button
+                                    className="btn btn-success"
+                                    style={{ padding: '8px 12px', fontSize: '14px' }}
+                                    onClick={() => setShowPinModal(true)}
+                                >
+                                    Panel admina
+                                </button>
+                            )}
+                            <button
+                                className="btn btn-secondary"
+                                style={{ padding: '8px 12px', fontSize: '14px' }}
+                                onClick={onLogout}
+                            >
+                                Wyloguj
+                            </button>
+                        </div>
+                    </div>
+
                     <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                         <div
                             style={{
@@ -1628,19 +1663,12 @@
                             onTouchStart={handleLogoPress}
                             onTouchEnd={handleLogoRelease}
                         >
-                            ??
+                            {'\uD83C\uDFE0'}
                         </div>
                         <h1 className="text-3xl text-bold" style={{ marginBottom: '8px' }}>Family Manager</h1>
                         <p className="text-lg" style={{ opacity: 0.8 }}>
                             {currentUser?.role === 'admin' ? 'Wybierz swoj profil' : 'Wybierz profil dziecka'}
                         </p>
-                        <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                            <span className="badge badge-passed">Zalogowany: {currentUser?.username}</span>
-                            <span className="badge badge-failed">Rola: {currentUser?.role}</span>
-                            <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '14px' }} onClick={onLogout}>
-                                Wyloguj
-                            </button>
-                        </div>
                     </div>
 
                     <div className="grid grid-2" style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -1683,18 +1711,13 @@
                             className="btn btn-primary"
                             onClick={() => setCurrentView('leaderboard')}
                         >
-                            ?? Ranking
+                            {'\uD83C\uDFC6'} Ranking
                         </button>
-                        {canManageAdminPanel && (
-                            <button className="btn btn-success" onClick={onOpenAdmin}>
-                                Panel admina
-                            </button>
-                        )}
                     </div>
 
                     {/* Family Goal Progress */}
                     <div className="glass-card" style={{ maxWidth: '600px', margin: '40px auto 0' }}>
-                        <h3 className="text-xl text-bold mb-2">?? Cel Rodzinny</h3>
+                        <h3 className="text-xl text-bold mb-2">{'\uD83C\uDFAF'} Cel Rodzinny</h3>
                         <p className="mb-2">{goalName}</p>
                         <div className="progress-bar">
                             <div
@@ -3250,6 +3273,10 @@
                         >
                             {isAdding ? 'Anuluj' : '+ Dodaj konto'}
                         </button>
+                    </div>
+
+                    <div className="glass-card mb-3" style={{ padding: '14px' }}>
+                        Tutaj dodasz uzytkownika, aktywujesz konto i zmienisz haslo.
                     </div>
 
                     <div className="glass-card mb-3">
