@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.DS_Store
+
+# Keep heavy sandbox project deps out of repo/deploy context
+my-app/node_modules/
+my-app/dist/

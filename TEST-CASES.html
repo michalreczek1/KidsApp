@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Manager - Test Cases</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 48px;
+        }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .test-case {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .test-case h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #fbbf24;
+        }
+
+        .scenario {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .scenario h4 {
+            color: #60a5fa;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .expected {
+            background: rgba(16, 185, 129, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .expected h4 {
+            color: #34d399;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        li {
+            margin: 6px 0;
+            line-height: 1.6;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .badge-passed {
+            background: #10b981;
+        }
+
+        .badge-failed {
+            background: #ef4444;
+        }
+
+        .badge-na {
+            background: #6b7280;
+        }
+
+        .highlight {
+            background: rgba(251, 191, 36, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .header-buttons {
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .warning {
+            background: rgba(245, 158, 11, 0.2);
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Family Manager - Test Cases</h1>
+        
+        <div class="header-buttons">
+            <a href="family-manager.html" class="btn">🏠 Otwórz Aplikację</a>
+            <a href="README.md" class="btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%)">📖 Dokumentacja</a>
+        </div>
+
+        <!-- Section A -->
+        <div class="test-section">
+            <h2>🎯 A. Logika 100%/0% (bez procentów)</h2>
+            
+            <div class="test-case">
+                <h3>Test 1: Dzień aktywny, częściowe wykonanie MIN</h3>
+                <div class="scenario">
+                    <h4>📝 Scenariusz:</h4>
+                    <ul>
+                        <li>Dzień aktywny (np. poniedziałek)</li>
+                        <li>3 zadania MIN zdefiniowane</li>
+                        <li>Zatwierdzone tylko <span class="highlight">2/3 zadania MIN</span></li>
+                    </ul>
+                </div>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Status dnia: <span class="badge badge-failed">FAILED</span></li>
+                        <li>Punkty za dzień: <span class="highlight">0</span></li>
+                        <li>Passa: <span class="highlight">0</span> (reset)</li>
+                        <li>⚠️ UI NIE pokazuje "66%" ani "prawie zaliczone"</li>
+                    </ul>
+                </div>
+                <div class="warning">
+                    <strong>KLUCZOWE:</strong> Nie wolno używać procentów! Tylko binarne PASSED/FAILED.
+                </div>
+            </div>
+
+            <div class="test-case">
+                <h3>Test 2: Dzień nieaktywny (N/A)</h3>
+                <div class="scenario">
+                    <h4>📝 Scenariusz:</h4>
+                    <ul>
+                        <li>Dzień nieaktywny (np. sobota gdy aktywne są Pn-Pt)</li>
+                        <li>Jakiekolwiek zadania (lub brak)</li>
+                    </ul>
+                </div>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Status dnia: <span class="badge badge-na">N/A</span></li>
+                        <li>Passa <span class="highlight">NIE jest resetowana</span></li>
+                        <li>Przykład ciągłości:</li>
+                        <ul>
+                            <li>Pt: <span class="badge badge-passed">PASSED</span> (passa = 3)</li>
+                            <li>Sb: <span class="badge badge-na">N/A</span> (passa nadal 3)</li>
+                            <li>Nd: <span class="badge badge-na">N/A</span> (passa nadal 3)</li>
+                            <li>Pn: <span class="badge badge-passed">PASSED</span> (passa = 4)</li>
+                        </ul>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section B -->
+        <div class="test-section">
+            <h2>💰 B. Przyznawanie punktów tylko za PASSED dzień</h2>
+            
+            <div class="test-case">
+                <h3>Test 3: Zmiana dnia z FAILED na PASSED</h3>
+                <div class="scenario">
+                    <h4>📝 Scenariusz:</h4>
+                    <ul>
+                        <li>Dzień początkowo FAILED (2/3 MIN zatwierdzone)</li>
+                        <li>Rodzic zatwierdza ostatnie brakujące zadanie MIN</li>
+                    </ul>
+                </div>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Status dnia zmienia się na <span class="badge badge-passed">PASSED</span></li>
+                        <li>Natychmiast przyznawane <span class="highlight">+5 punktów</span> (POINTS_PER_PASSED_DAY)</li>
+                        <li>Wpis w <code>pointsLedger</code> typu "day_passed"</li>
+                        <li>🎉 Konfetti + dźwięk sukcesu</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <h3>Test 4: Anty-dublowanie punktów</h3>
+                <div class="scenario">
+                    <h4>📝 Scenariusz:</h4>
+                    <ul>
+                        <li>Dzień już ma status <span class="badge badge-passed">PASSED</span></li>
+                        <li>Użytkownik odświeża stronę / wchodzi ponownie</li>
+                        <li>Rodzic klika kilka razy zatwierdzenie</li>
+                    </ul>
+                </div>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Punkty przyznane <span class="highlight">tylko raz</span></li>
+                        <li><code>dayPointsGranted[date] = true</code> zapobiega duplikatom</li>
+                        <li><code>pointsTotal</code> nie zwiększa się ponownie</li>
+                        <li>Ledger nie zawiera duplikatów dla tej samej daty</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <h3>Test 5: Brak punktów za samo oznaczenie zadania</h3>
+                <div class="scenario">
+                    <h4>📝 Scenariusz:</h4>
+                    <ul>
+                        <li>Dziecko oznacza MIN jako <code>doneByChild=true</code></li>
+                        <li>Brak akceptacji rodzica (<code>approvedByParent=false</code>)</li>
+                    </ul>
+                </div>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Punkty: <span class="highlight">0</span></li>
+                        <li>Status dnia pozostaje <span class="badge badge-failed">FAILED</span></li>
+                        <li>Zadanie widoczne w kolejce "Do zatwierdzenia"</li>
+                        <li>Brak konfetti ani dźwięku</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section C -->
+        <div class="test-section">
+            <h2>🔥 C. Passa (streak) - twarda logika</h2>
+            
+            <div class="test-case">
+                <h3>Test 6: Passa rośnie tylko od PASSED dni aktywnych</h3>
+                <div class="scenario">
+                    <h4>📝 Scenariusz:</h4>
+                    <ul>
+                        <li>Pn: <span class="badge badge-passed">PASSED</span></li>
+                        <li>Wt: <span class="badge badge-passed">PASSED</span></li>
+                        <li>Śr: <span class="badge badge-failed">FAILED</span></li>
+                        <li>Czw: <span class="badge badge-passed">PASSED</span></li>
+                    </ul>
+                </div>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Po Pn: <span class="highlight">streak = 1</span></li>
+                        <li>Po Wt: <span class="highlight">streak = 2</span></li>
+                        <li>Po Śr: <span class="highlight">streak = 0</span> (reset!)</li>
+                        <li>Po Czw: <span class="highlight">streak = 1</span> (nowy start)</li>
+                        <li>⚠️ NIE liczyć <code>doneByChild</code> ani <span class="badge badge-na">N/A</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <h3>Test 7: Dni nieaktywne nie resetują passy</h3>
+                <div class="scenario">
+                    <h4>📝 Scenariusz:</h4>
+                    <ul>
+                        <li>Pt: <span class="badge badge-passed">PASSED</span> (streak = 3)</li>
+                        <li>Sb: <span class="badge badge-na">N/A</span> (weekend)</li>
+                        <li>Nd: <span class="badge badge-na">N/A</span> (weekend)</li>
+                        <li>Pn: <span class="badge badge-passed">PASSED</span></li>
+                    </ul>
+                </div>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Streak po Pn: <span class="highlight">4</span> (nie zresetowana!)</li>
+                        <li>Dni N/A są ignorowane przy liczeniu ciągłości</li>
+                        <li>Passa kontynuuje przez weekend</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section D -->
+        <div class="test-section">
+            <h2>🏆 D. Idealny tydzień (0/1) i bonus</h2>
+            
+            <div class="test-case">
+                <h3>Test 8: Idealny tydzień = 100% aktywnych PASSED</h3>
+                <div class="scenario">
+                    <h4>📝 Scenariusz:</h4>
+                    <ul>
+                        <li>Aktywne dni: Pn-Pt (5 dni)</li>
+                        <li>4 dni: <span class="badge badge-passed">PASSED</span></li>
+                        <li>1 dzień: <span class="badge badge-failed">FAILED</span></li>
+                    </ul>
+                </div>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Tydzień <span class="highlight">NIE jest idealny</span></li>
+                        <li>Brak bonusu IDEAL_WEEK</li>
+                        <li>⚠️ Nie wolno "prawie idealny" ani "80% idealności"</li>
+                        <li>Wymóg: <span class="highlight">100% dni aktywnych = PASSED</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <h3>Test 9: Bonus IDEAL_WEEK przyznawany raz</h3>
+                <div class="scenario">
+                    <h4>📝 Scenariusz:</h4>
+                    <ul>
+                        <li>Wszystkie dni Pn-Pt: <span class="badge badge-passed">PASSED</span></li>
+                        <li>Tydzień staje się IDEAL</li>
+                    </ul>
+                </div>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Bonus <span class="highlight">+20 punktów</span> przyznany raz</li>
+                        <li><code>weekBonusGranted[weekStart] = true</code></li>
+                        <li>Odświeżenie strony nie dodaje bonusu ponownie</li>
+                        <li>Wpis w ledgerze typu "ideal_week"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section E -->
+        <div class="test-section">
+            <h2>🎁 E. Odblokowanie nagród</h2>
+            
+            <div class="test-case">
+                <h3>Test 10: Nagroda progowa punktów</h3>
+                <div class="scenario">
+                    <h4>📝 Scenariusz:</h4>
+                    <ul>
+                        <li><code>pointsTotal</code> przekracza próg (np. 30)</li>
+                    </ul>
+                </div>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Nagroda odblokowana <span class="highlight">dokładnie raz</span></li>
+                        <li>🎉 Pełnoekranowy modal "BRAWO! Masz odblokowaną nagrodę!"</li>
+                        <li>Konfetti + dźwięk sukcesu</li>
+                        <li>Nagroda dodana do <code>unlockedRewards</code></li>
+                        <li>Rodzic widzi w zakładce "Nagrody"</li>
+                        <li>Przycisk "Wydano" dostępny</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <h3>Test 11: Nagroda za passę / idealne tygodnie</h3>
+                <div class="scenario">
+                    <h4>📝 Scenariusz:</h4>
+                    <ul>
+                        <li>Wymaganie: <code>streakDays >= 7</code></li>
+                        <li>LUB: <code>idealWeeksInRow >= 2</code></li>
+                    </ul>
+                </div>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Odblokowanie dopiero przy osiągnięciu <span class="highlight">dokładnego</span> warunku</li>
+                        <li>⚠️ Nie wolno "1.5 tygodnia" ani przybliżenia</li>
+                        <li>Twarde 0/1 (albo spełnione albo nie)</li>
+                        <li>streak = 6 → brak nagrody</li>
+                        <li>streak = 7 → odblokowanie!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section F -->
+        <div class="test-section">
+            <h2>📅 F. Reset dzienny / zmiana daty</h2>
+            
+            <div class="test-case">
+                <h3>Test 12: Nowy dzień</h3>
+                <div class="scenario">
+                    <h4>📝 Scenariusz:</h4>
+                    <ul>
+                        <li>Zmiana daty na następny dzień</li>
+                    </ul>
+                </div>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Nowa struktura statusu dnia utworzona</li>
+                        <li>Ocena poprzedniego dnia <span class="highlight">zachowana</span></li>
+                        <li>Dzień FAILED może przejść na PASSED jeśli rodzic później uzupełni akceptacje</li>
+                        <li>Punkty nadal <span class="highlight">tylko raz za dzień</span> (dzięki dayPointsGranted)</li>
+                        <li>Nowy dzień startuje jako pusta lista zadań do wykonania</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section G -->
+        <div class="test-section">
+            <h2>🎨 G. Zgodność UI</h2>
+            
+            <div class="test-case">
+                <h3>Test 13: UI bez procentów</h3>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Panel dziecka pokazuje tylko:</li>
+                        <ul>
+                            <li><span class="badge badge-passed">PASSED</span> / <span class="badge badge-failed">FAILED</span> / <span class="badge badge-na">N/A</span></li>
+                            <li>Passa (streak)</li>
+                            <li>Punkty (total)</li>
+                            <li>Idealne tygodnie</li>
+                            <li>Kalendarzyk (✓ / ✗ / -)</li>
+                        </ul>
+                        <li>⚠️ Brak komunikatów typu:</li>
+                        <ul>
+                            <li>"90% w tym tygodniu"</li>
+                            <li>"Prawie zaliczone"</li>
+                            <li>"66% zadań wykonanych"</li>
+                            <li>Jakichkolwiek procentów!</li>
+                        </ul>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <h3>Test 14: Kolejka do akceptacji</h3>
+                <div class="expected">
+                    <h4>✅ Oczekiwany rezultat:</h4>
+                    <ul>
+                        <li>Admin widzi zakładkę "Do zatwierdzenia (X)"</li>
+                        <li>Licznik pokazuje zadania z <code>doneByChild=true</code> i <code>approvedByParent=false</code></li>
+                        <li>Przycisk "✓ Zatwierdź" przy każdym zadaniu</li>
+                        <li>Po zatwierdzeniu:</li>
+                        <ul>
+                            <li>Status zadania → <code>approvedByParent=true</code></li>
+                            <li>Przeliczenie statusu dnia</li>
+                            <li>Ewentualne przyznanie punktów</li>
+                            <li>Konfetti jeśli dzień stał się PASSED</li>
+                        </ul>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="test-section" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.5);">
+            <h2>✅ Podsumowanie Implementacji</h2>
+            <div style="font-size: 18px; line-height: 2;">
+                <p>✅ System 100%/0% (PASSED/FAILED/N/A)</p>
+                <p>✅ Punkty tylko za PASSED dzień (Opcja C)</p>
+                <p>✅ Anty-dublowanie punktów (dayPointsGranted)</p>
+                <p>✅ Passa z ignorowaniem N/A</p>
+                <p>✅ Idealny tydzień (0/1, bez przybliżeń)</p>
+                <p>✅ Bonus za idealny tydzień (raz)</p>
+                <p>✅ System nagród (progi + warunki)</p>
+                <p>✅ Cel rodzinny</p>
+                <p>✅ UI bez procentów</p>
+                <p>✅ Panel admina z kolejką</p>
+                <p>✅ Ranking (idealne tygodnie → passa → punkty)</p>
+                <p>✅ Glassmorphism design</p>
+                <p>✅ PWA support</p>
+                <p>✅ Animacje i dźwięki</p>
+                <p style="margin-top: 20px; font-size: 24px; font-weight: bold; color: #34d399;">
+                    🎉 Wszystkie 14 test cases zaimplementowane!
+                </p>
+            </div>
+        </div>
+
+        <div class="header-buttons" style="margin-top: 40px;">
+            <a href="family-manager.html" class="btn">🚀 Rozpocznij Testowanie</a>
+        </div>
+    </div>
+</body>
+</html>

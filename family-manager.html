@@ -1,0 +1,2913 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="System zarządzania zadaniami i nagrodami dla rodziny">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Family Manager">
+    <link rel="manifest" href="/manifest.json">
+    <title>Family Manager - System Zarządzania Rodziną</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@3.0.0/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.85);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --shadow-lg: 0 20px 60px 0 rgba(31, 38, 135, 0.5);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 70%, #fbc2eb 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: backgroundMove 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes backgroundMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        #root {
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Glassmorphism Base */
+        .glass {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .glass-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37), 
+                        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.6) 50%, 
+                transparent 100%);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(31, 38, 135, 0.5),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.5);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 16px;
+            border: none;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-2px);
+        }
+
+        /* Input Styling */
+        .input, .select, .textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .input:focus, .select:focus, .textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.22);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15),
+                        0 8px 16px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Avatar Styles */
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25),
+                        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .avatar-sm {
+            width: 48px;
+            height: 48px;
+            font-size: 24px;
+        }
+
+        /* Status Badge */
+        .badge {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 24px;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .badge-passed {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: white;
+        }
+
+        .badge-failed {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            color: white;
+        }
+
+        .badge-na {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Calendar Grid */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .calendar-day:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .calendar-day.passed {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            border-color: #10b981;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .calendar-day.failed {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            border-color: #ef4444;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .calendar-day.na {
+            background: rgba(255, 255, 255, 0.12);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+            }
+            50% {
+                transform: scale(1.03);
+                box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Task List */
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-item:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.15) 100%);
+            transform: translateX(6px);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .task-checkbox {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 3px solid rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .task-checkbox.checked {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            border-color: #10b981;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .task-checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%);
+            transition: width 0.5s ease;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Modal/Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+            backdrop-filter: blur(40px) saturate(200%);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 28px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5),
+                        inset 0 1px 2px rgba(255, 255, 255, 0.4);
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            padding: 8px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px 24px;
+            border-radius: 16px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+            position: relative;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+            color: #667eea;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Grid Layouts */
+        .grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .text-bold { font-weight: 700; }
+        .text-lg { font-size: 20px; }
+        .text-xl { font-size: 24px; }
+        .text-2xl { font-size: 32px; }
+        .text-3xl { font-size: 40px; }
+        .mt-1 { margin-top: 8px; }
+        .mt-2 { margin-top: 16px; }
+        .mt-3 { margin-top: 24px; }
+        .mt-4 { margin-top: 32px; }
+        .mb-1 { margin-bottom: 8px; }
+        .mb-2 { margin-bottom: 16px; }
+        .mb-3 { margin-bottom: 24px; }
+        .mb-4 { margin-bottom: 32px; }
+        .p-4 { padding: 32px; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-2 { gap: 16px; }
+        .gap-3 { gap: 24px; }
+        .w-full { width: 100%; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glass-card {
+                padding: 16px;
+            }
+            .text-3xl { font-size: 28px; }
+            .text-2xl { font-size: 24px; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // ==================== TOAST NOTIFICATIONS ====================
+        function ToastContainer({ toasts, removeToast }) {
+            return (
+                <div style={{
+                    position: 'fixed',
+                    top: '20px',
+                    right: '20px',
+                    zIndex: 2000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
+                }}>
+                    {toasts.map(toast => (
+                        <div
+                            key={toast.id}
+                            className="glass-card"
+                            style={{
+                                minWidth: '300px',
+                                padding: '16px',
+                                background: toast.type === 'success' 
+                                    ? 'rgba(16, 185, 129, 0.3)'
+                                    : toast.type === 'error'
+                                    ? 'rgba(239, 68, 68, 0.3)'
+                                    : 'rgba(99, 102, 241, 0.3)',
+                                animation: 'slideIn 0.3s ease-out',
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => removeToast(toast.id)}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <span style={{ fontSize: '24px' }}>
+                                    {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}
+                                </span>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: 600 }}>{toast.title}</div>
+                                    {toast.message && (
+                                        <div style={{ fontSize: '14px', opacity: 0.8, marginTop: '4px' }}>
+                                            {toast.message}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        // ==================== CONSTANTS ====================
+        const POINTS_PER_PASSED_DAY = 5;
+        const BONUS_IDEAL_WEEK = 20;
+        const DEFAULT_ADMIN_PIN = '1234';
+        const DAYS_OF_WEEK = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
+        const TIER_LABELS = {
+            MIN: '⭐ Minimum',
+            PLUS: '💎 Bonus',
+            WEEKLY: '🏆 Tygodniowe'
+        };
+
+        // ==================== UTILITY FUNCTIONS ====================
+        const formatDate = (date) => {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        const getTodayDate = () => formatDate(new Date());
+
+        const getWeekStart = (date) => {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return formatDate(new Date(d.setDate(diff)));
+        };
+
+        const addDays = (date, days) => {
+            const d = new Date(date);
+            d.setDate(d.getDate() + days);
+            return formatDate(d);
+        };
+
+        const getDayOfWeek = (date) => {
+            const d = new Date(date);
+            return d.getDay(); // 0=Sunday, 1=Monday, etc.
+        };
+
+        const normalizeFamilyGoalThreshold = (value) => {
+            const parsed = Number.parseInt(value, 10);
+            return Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
+        };
+
+        const normalizeFamilyGoal = (goal) => ({
+            name: (goal?.name || 'Cel rodzinny').trim() || 'Cel rodzinny',
+            threshold: normalizeFamilyGoalThreshold(goal?.threshold),
+            type: goal?.type === 'days' ? 'days' : 'points'
+        });
+
+        const normalizeNonNegativeInt = (value, fallback) => {
+            const parsed = Number.parseInt(value, 10);
+            return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+        };
+
+        const normalizeAdminPin = (value) => {
+            const pin = String(value ?? '').trim();
+            return /^\d{4,8}$/.test(pin) ? pin : DEFAULT_ADMIN_PIN;
+        };
+
+        const normalizeAppSettings = (settings) => ({
+            pointsPerPassedDay: normalizeNonNegativeInt(settings?.pointsPerPassedDay, POINTS_PER_PASSED_DAY),
+            bonusIdealWeek: normalizeNonNegativeInt(settings?.bonusIdealWeek, BONUS_IDEAL_WEEK),
+            adminPin: normalizeAdminPin(settings?.adminPin)
+        });
+
+        const playSuccessSound = () => {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 523.25;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        };
+
+        const triggerConfetti = () => {
+            if (window.confetti) {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        };
+
+        // ==================== INITIAL DATA ====================
+        const getInitialData = () => {
+            const stored = localStorage.getItem('familyManagerData');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (parsed && typeof parsed === 'object') {
+                        return {
+                            ...parsed,
+                            familyGoal: normalizeFamilyGoal(parsed.familyGoal),
+                            settings: normalizeAppSettings(parsed.settings)
+                        };
+                    }
+                } catch (error) {
+                    console.warn('Nieprawidlowe dane w localStorage, przywracam domyslne.', error);
+                }
+                localStorage.removeItem('familyManagerData');
+            }
+
+            return {
+                children: [
+                    {
+                        id: 'child-1',
+                        name: 'Leo',
+                        avatar: '🦁',
+                        activeDays: [1, 2, 3, 4, 5], // Pn-Pt
+                        pointsTotal: 0,
+                        pointsLedger: [],
+                        streakDays: 0,
+                        idealWeeks: 0,
+                        idealWeeksInRow: 0,
+                        unlockedRewards: [],
+                        dayPointsGranted: {},
+                        weekBonusGranted: {}
+                    },
+                    {
+                        id: 'child-2',
+                        name: 'Mia',
+                        avatar: '🦄',
+                        activeDays: [1, 2, 3, 4, 5],
+                        pointsTotal: 0,
+                        pointsLedger: [],
+                        streakDays: 0,
+                        idealWeeks: 0,
+                        idealWeeksInRow: 0,
+                        unlockedRewards: [],
+                        dayPointsGranted: {},
+                        weekBonusGranted: {}
+                    }
+                ],
+                tasks: [
+                    { id: 'task-1', childId: 'child-1', name: 'Posprzątaj pokój', tier: 'MIN', points: 0 },
+                    { id: 'task-2', childId: 'child-1', name: 'Zrób lekcje', tier: 'MIN', points: 0 },
+                    { id: 'task-3', childId: 'child-1', name: 'Pomoc w kuchni', tier: 'PLUS', points: 0 },
+                    { id: 'task-4', childId: 'child-2', name: 'Posprzątaj pokój', tier: 'MIN', points: 0 },
+                    { id: 'task-5', childId: 'child-2', name: 'Zrób lekcje', tier: 'MIN', points: 0 },
+                    { id: 'task-6', childId: 'child-2', name: 'Czytanie 20 min', tier: 'PLUS', points: 0 }
+                ],
+                completions: [],
+                rewards: [
+                    { id: 'reward-1', name: 'Dodatkowy czas ekranowy', pointsThreshold: 30, streakThreshold: null, idealWeeksThreshold: null },
+                    { id: 'reward-2', name: 'Wycieczka do kina', pointsThreshold: 60, streakThreshold: null, idealWeeksThreshold: null },
+                    { id: 'reward-3', name: 'Nowa zabawka', pointsThreshold: 90, streakThreshold: null, idealWeeksThreshold: null },
+                    { id: 'reward-4', name: 'Passa mistrza', pointsThreshold: null, streakThreshold: 7, idealWeeksThreshold: null },
+                    { id: 'reward-5', name: 'Idealny nawyk', pointsThreshold: null, streakThreshold: null, idealWeeksThreshold: 2 }
+                ],
+                settings: {
+                    pointsPerPassedDay: POINTS_PER_PASSED_DAY,
+                    bonusIdealWeek: BONUS_IDEAL_WEEK,
+                    adminPin: DEFAULT_ADMIN_PIN
+                },
+                familyGoal: {
+                    name: 'Wyjście na pizzę',
+                    threshold: 200,
+                    type: 'points' // 'points' or 'days'
+                }
+            };
+        };
+
+        // ==================== CORE LOGIC FUNCTIONS ====================
+        
+        // Evaluate if a day is PASSED/FAILED/N/A
+        const evaluateDay = (childData, date, completions, tasks) => {
+            const dayOfWeek = getDayOfWeek(date);
+            const isActiveDay = childData.activeDays.includes(dayOfWeek);
+            
+            if (!isActiveDay) return 'N/A';
+            
+            // Get all MIN tasks for this child
+            const minTasks = tasks.filter(t => t.childId === childData.id && t.tier === 'MIN');
+            
+            // Get completions for this day
+            const dayCompletions = completions.filter(c => 
+                c.childId === childData.id && 
+                c.date === date &&
+                c.approvedByParent === true
+            );
+            
+            // Check if all MIN tasks are approved
+            const allMinApproved = minTasks.every(task => 
+                dayCompletions.some(c => c.taskId === task.id)
+            );
+            
+            return allMinApproved ? 'PASSED' : 'FAILED';
+        };
+
+        // Apply points/bonus effects after a parent approval in one atomic child update.
+        const applyCompletionApprovalEffects = (childData, date, completions, tasks, settings) => {
+            const appSettings = normalizeAppSettings(settings);
+            const pointsPerPassedDay = appSettings.pointsPerPassedDay;
+            const bonusIdealWeek = appSettings.bonusIdealWeek;
+            let updatedChild = { ...childData };
+            const dayStatus = evaluateDay(updatedChild, date, completions, tasks);
+
+            if (dayStatus === 'PASSED' && !updatedChild.dayPointsGranted[date]) {
+                updatedChild = {
+                    ...updatedChild,
+                    pointsTotal: updatedChild.pointsTotal + pointsPerPassedDay,
+                    pointsLedger: [...updatedChild.pointsLedger, {
+                        date,
+                        type: 'day_passed',
+                        points: pointsPerPassedDay,
+                        timestamp: new Date().toISOString()
+                    }],
+                    dayPointsGranted: { ...updatedChild.dayPointsGranted, [date]: true }
+                };
+            }
+
+            const weekStart = getWeekStart(date);
+            const weekDays = [];
+            for (let i = 0; i < 7; i++) {
+                weekDays.push(addDays(weekStart, i));
+            }
+
+            const activeDaysInWeek = weekDays.filter(dayDate => {
+                const dayOfWeek = getDayOfWeek(dayDate);
+                return updatedChild.activeDays.includes(dayOfWeek);
+            });
+
+            const isIdealWeek = activeDaysInWeek.length > 0 && activeDaysInWeek.every(dayDate =>
+                evaluateDay(updatedChild, dayDate, completions, tasks) === 'PASSED'
+            );
+
+            if (isIdealWeek && !updatedChild.weekBonusGranted[weekStart]) {
+                updatedChild = {
+                    ...updatedChild,
+                    pointsTotal: updatedChild.pointsTotal + bonusIdealWeek,
+                    pointsLedger: [...updatedChild.pointsLedger, {
+                        date: weekStart,
+                        type: 'ideal_week',
+                        points: bonusIdealWeek,
+                        timestamp: new Date().toISOString()
+                    }],
+                    weekBonusGranted: { ...updatedChild.weekBonusGranted, [weekStart]: true },
+                    idealWeeks: updatedChild.idealWeeks + 1
+                };
+            }
+
+            return updatedChild;
+        };
+
+        // Calculate streak
+        const calculateStreak = (childData, today, completions, tasks) => {
+            let streak = 0;
+            let currentDate = today;
+            
+            // Go backwards from today
+            for (let i = 0; i < 365; i++) {
+                const status = evaluateDay(childData, currentDate, completions, tasks);
+                
+                if (status === 'PASSED') {
+                    streak++;
+                } else if (status === 'FAILED') {
+                    break; // Streak ends
+                }
+                // N/A doesn't break streak, continue
+                
+                currentDate = addDays(currentDate, -1);
+            }
+            
+            return streak;
+        };
+
+        // Calculate ideal weeks in a row
+        const calculateIdealWeeksInRow = (childData, today, completions, tasks) => {
+            let count = 0;
+            let currentWeekStart = getWeekStart(today);
+            
+            for (let i = 0; i < 52; i++) {
+                const weekDays = [];
+                for (let j = 0; j < 7; j++) {
+                    weekDays.push(addDays(currentWeekStart, j));
+                }
+                
+                const activeDaysInWeek = weekDays.filter(date => {
+                    const dayOfWeek = getDayOfWeek(date);
+                    return childData.activeDays.includes(dayOfWeek);
+                });
+                
+                const allPassed = activeDaysInWeek.every(date => 
+                    evaluateDay(childData, date, completions, tasks) === 'PASSED'
+                );
+                
+                if (allPassed && activeDaysInWeek.length > 0) {
+                    count++;
+                } else {
+                    break;
+                }
+                
+                currentWeekStart = addDays(currentWeekStart, -7);
+            }
+            
+            return count;
+        };
+
+        // Check and unlock rewards
+        const checkRewards = (childData, rewards, updateChild, showRewardModal) => {
+            const newUnlocked = [];
+            
+            rewards.forEach(reward => {
+                // Check if already unlocked
+                const alreadyUnlocked = childData.unlockedRewards.some(ur => ur.rewardId === reward.id);
+                if (alreadyUnlocked) return;
+                
+                let shouldUnlock = false;
+                
+                if (reward.pointsThreshold && childData.pointsTotal >= reward.pointsThreshold) {
+                    shouldUnlock = true;
+                }
+                
+                if (reward.streakThreshold && childData.streakDays >= reward.streakThreshold) {
+                    shouldUnlock = true;
+                }
+                
+                if (reward.idealWeeksThreshold && childData.idealWeeksInRow >= reward.idealWeeksThreshold) {
+                    shouldUnlock = true;
+                }
+                
+                if (shouldUnlock) {
+                    const unlockedReward = {
+                        rewardId: reward.id,
+                        unlockedAt: new Date().toISOString(),
+                        claimedAt: null
+                    };
+                    newUnlocked.push(unlockedReward);
+                }
+            });
+            
+            if (newUnlocked.length > 0) {
+                const updatedRewards = [...childData.unlockedRewards, ...newUnlocked];
+                updateChild({
+                    ...childData,
+                    unlockedRewards: updatedRewards
+                });
+                
+                // Show modal for first unlocked reward
+                const firstReward = rewards.find(r => r.id === newUnlocked[0].rewardId);
+                showRewardModal(firstReward, childData.name);
+                
+                triggerConfetti();
+                playSuccessSound();
+            }
+        };
+
+        // ==================== MAIN APP COMPONENT ====================
+        function App() {
+            const [data, setData] = useState(getInitialData());
+            const [currentView, setCurrentView] = useState('home');
+            const [selectedChildId, setSelectedChildId] = useState(null);
+            const [adminUnlocked, setAdminUnlocked] = useState(false);
+            const [rewardModal, setRewardModal] = useState(null);
+            const [pinInput, setPinInput] = useState('');
+            const [toasts, setToasts] = useState([]);
+            const today = getTodayDate();
+            const selectedChild = data.children.find(c => c.id === selectedChildId) || null;
+            const appSettings = normalizeAppSettings(data.settings);
+
+            // Toast notification system
+            const showToast = (title, message, type = 'info') => {
+                const id = Date.now();
+                const newToast = { id, title, message, type };
+                setToasts(prev => [...prev, newToast]);
+                
+                setTimeout(() => {
+                    setToasts(prev => prev.filter(t => t.id !== id));
+                }, 4000);
+            };
+
+            const removeToast = (id) => {
+                setToasts(prev => prev.filter(t => t.id !== id));
+            };
+
+            // Save to localStorage whenever data changes
+            useEffect(() => {
+                localStorage.setItem('familyManagerData', JSON.stringify(data));
+            }, [data]);
+
+            // Update child data
+            const updateChild = (updatedChild) => {
+                setData(prev => ({
+                    ...prev,
+                    children: prev.children.map(c => c.id === updatedChild.id ? updatedChild : c)
+                }));
+            };
+
+            // Add completion
+            const addCompletion = (childId, taskId, doneByChild = false) => {
+                const newCompletion = {
+                    id: `completion-${Date.now()}`,
+                    childId,
+                    taskId,
+                    date: today,
+                    doneByChild,
+                    approvedByParent: !doneByChild,
+                    timestamp: new Date().toISOString()
+                };
+                
+                setData(prev => ({
+                    ...prev,
+                    completions: [...prev.completions, newCompletion]
+                }));
+            };
+
+            // Remove completion (child can withdraw only non-approved marks)
+            const removeCompletion = (completionId) => {
+                setData(prev => ({
+                    ...prev,
+                    completions: prev.completions.filter(c => c.id !== completionId)
+                }));
+            };
+
+            // Approve completion
+            const approveCompletion = (completionId) => {
+                let shouldCelebrate = false;
+
+                setData(prev => {
+                    const completion = prev.completions.find(c => c.id === completionId);
+                    if (!completion) return prev;
+                    if (completion.approvedByParent) return prev;
+
+                    const child = prev.children.find(c => c.id === completion.childId);
+                    if (!child) return prev;
+
+                    const previousDayStatus = evaluateDay(child, completion.date, prev.completions, prev.tasks);
+                    const updatedCompletions = prev.completions.map(c =>
+                        c.id === completionId ? { ...c, approvedByParent: true } : c
+                    );
+                    const newDayStatus = evaluateDay(child, completion.date, updatedCompletions, prev.tasks);
+                    shouldCelebrate = previousDayStatus !== 'PASSED' && newDayStatus === 'PASSED';
+
+                    const updatedChild = applyCompletionApprovalEffects(
+                        child,
+                        completion.date,
+                        updatedCompletions,
+                        prev.tasks,
+                        prev.settings
+                    );
+
+                    return {
+                        ...prev,
+                        completions: updatedCompletions,
+                        children: prev.children.map(c => c.id === updatedChild.id ? updatedChild : c)
+                    };
+                });
+                
+                if (shouldCelebrate) {
+                    playSuccessSound();
+                    triggerConfetti();
+                }
+            };
+
+            // Show reward modal
+            const showRewardModal = (reward, childName) => {
+                setRewardModal({ reward, childName });
+            };
+
+            // Admin PIN check
+            const checkAdminPin = () => {
+                if (pinInput === appSettings.adminPin) {
+                    setAdminUnlocked(true);
+                    setCurrentView('admin');
+                    setPinInput('');
+                }
+            };
+
+            useEffect(() => {
+                if (currentView === 'child' && !selectedChild) {
+                    setCurrentView('home');
+                }
+            }, [currentView, selectedChild]);
+
+            return (
+                <div style={{ minHeight: '100vh', padding: '20px' }}>
+                    <ToastContainer toasts={toasts} removeToast={removeToast} />
+                    
+                    {currentView === 'home' && (
+                        <HomeScreen 
+                            data={data}
+                            setCurrentView={setCurrentView}
+                            setSelectedChild={setSelectedChildId}
+                            setAdminUnlocked={setAdminUnlocked}
+                            setPinInput={setPinInput}
+                            pinInput={pinInput}
+                            checkAdminPin={checkAdminPin}
+                        />
+                    )}
+                    
+                    {currentView === 'child' && selectedChild && (
+                        <ChildPanel 
+                            childData={selectedChild}
+                            data={data}
+                            setCurrentView={setCurrentView}
+                            addCompletion={addCompletion}
+                            removeCompletion={removeCompletion}
+                            updateChild={updateChild}
+                            showRewardModal={showRewardModal}
+                        />
+                    )}
+                    
+                    {currentView === 'admin' && (
+                        <AdminPanel 
+                            data={data}
+                            setData={setData}
+                            setCurrentView={setCurrentView}
+                            updateChild={updateChild}
+                            approveCompletion={approveCompletion}
+                            showToast={showToast}
+                        />
+                    )}
+                    
+                    {currentView === 'leaderboard' && (
+                        <Leaderboard 
+                            data={data}
+                            setCurrentView={setCurrentView}
+                        />
+                    )}
+                    
+                    {rewardModal && (
+                        <RewardModal 
+                            reward={rewardModal.reward}
+                            childName={rewardModal.childName}
+                            onClose={() => setRewardModal(null)}
+                        />
+                    )}
+                </div>
+            );
+        }
+
+        // ==================== HOME SCREEN ====================
+        function HomeScreen({ data, setCurrentView, setSelectedChild, setAdminUnlocked, setPinInput, pinInput, checkAdminPin }) {
+            const [showPinModal, setShowPinModal] = useState(false);
+            const [logoHoldTimer, setLogoHoldTimer] = useState(null);
+            const totalPoints = data.children.reduce((sum, c) => sum + c.pointsTotal, 0);
+            const goalThreshold = normalizeFamilyGoalThreshold(data.familyGoal?.threshold);
+            const goalProgress = Math.min(100, (totalPoints / goalThreshold) * 100);
+            const goalName = data.familyGoal?.name || 'Cel rodzinny';
+
+            const handleLogoPress = () => {
+                const timer = setTimeout(() => {
+                    setShowPinModal(true);
+                }, 2000);
+                setLogoHoldTimer(timer);
+            };
+
+            const handleLogoRelease = () => {
+                if (logoHoldTimer) {
+                    clearTimeout(logoHoldTimer);
+                    setLogoHoldTimer(null);
+                }
+            };
+
+            return (
+                <div className="fade-in">
+                    <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                        <div 
+                            style={{ 
+                                fontSize: '64px', 
+                                marginBottom: '16px',
+                                cursor: 'pointer',
+                                userSelect: 'none'
+                            }}
+                            onMouseDown={handleLogoPress}
+                            onMouseUp={handleLogoRelease}
+                            onMouseLeave={handleLogoRelease}
+                            onTouchStart={handleLogoPress}
+                            onTouchEnd={handleLogoRelease}
+                        >
+                            🏠
+                        </div>
+                        <h1 className="text-3xl text-bold" style={{ marginBottom: '8px' }}>Family Manager</h1>
+                        <p className="text-lg" style={{ opacity: 0.8 }}>Wybierz swój profil</p>
+                    </div>
+
+                    <div className="grid grid-2" style={{ maxWidth: '800px', margin: '0 auto' }}>
+                        {data.children.map(child => (
+                            <div 
+                                key={child.id}
+                                className="glass-card"
+                                style={{ cursor: 'pointer', textAlign: 'center' }}
+                                onClick={() => {
+                                    setSelectedChild(child.id);
+                                    setCurrentView('child');
+                                }}
+                            >
+                                <div className="avatar" style={{ margin: '0 auto 16px' }}>
+                                    {child.avatar}
+                                </div>
+                                <h2 className="text-2xl text-bold">{child.name}</h2>
+                                <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-around' }}>
+                                    <div>
+                                        <div className="text-lg text-bold">{child.streakDays}</div>
+                                        <div style={{ fontSize: '14px', opacity: 0.7 }}>Passa dni</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-lg text-bold">{child.pointsTotal}</div>
+                                        <div style={{ fontSize: '14px', opacity: 0.7 }}>Punkty</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div style={{ textAlign: 'center', marginTop: '40px', display: 'flex', gap: '16px', justifyContent: 'center' }}>
+                        <button 
+                            className="btn btn-primary"
+                            onClick={() => setCurrentView('leaderboard')}
+                        >
+                            🏆 Ranking
+                        </button>
+                    </div>
+
+                    {/* Family Goal Progress */}
+                    <div className="glass-card" style={{ maxWidth: '600px', margin: '40px auto 0' }}>
+                        <h3 className="text-xl text-bold mb-2">🎯 Cel Rodzinny</h3>
+                        <p className="mb-2">{goalName}</p>
+                        <div className="progress-bar">
+                            <div 
+                                className="progress-fill"
+                                style={{ 
+                                    width: `${goalProgress}%` 
+                                }}
+                            >
+                                {totalPoints} / {goalThreshold}
+                            </div>
+                        </div>
+                    </div>
+
+                    {showPinModal && (
+                        <div className="modal-overlay" onClick={() => setShowPinModal(false)}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                <h2 className="text-2xl text-bold mb-3 text-center">Panel Administratora</h2>
+                                <p className="mb-3 text-center">Wprowadź PIN administratora</p>
+                                <input 
+                                    type="password"
+                                    className="input mb-2"
+                                    value={pinInput}
+                                    onChange={(e) => setPinInput(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && checkAdminPin()}
+                                    placeholder="PIN"
+                                    autoFocus
+                                />
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <button 
+                                        className="btn btn-secondary"
+                                        style={{ flex: 1 }}
+                                        onClick={() => setShowPinModal(false)}
+                                    >
+                                        Anuluj
+                                    </button>
+                                    <button 
+                                        className="btn btn-primary"
+                                        style={{ flex: 1 }}
+                                        onClick={() => {
+                                            checkAdminPin();
+                                            setShowPinModal(false);
+                                        }}
+                                    >
+                                        Potwierdź
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // ==================== CHILD PANEL ====================
+        function ChildPanel({ childData, data, setCurrentView, addCompletion, removeCompletion, updateChild, showRewardModal }) {
+            const today = getTodayDate();
+            const tasks = data.tasks.filter(t => t.childId === childData.id);
+            const completions = data.completions;
+            
+            // Calculate today's status
+            const todayStatus = evaluateDay(childData, today, completions, tasks);
+            
+            // Calculate streak
+            const streak = calculateStreak(childData, today, completions, tasks);
+            
+            // Calculate ideal weeks in row
+            const idealWeeksInRow = calculateIdealWeeksInRow(childData, today, completions, tasks);
+            
+            // Update child with calculated values
+            useEffect(() => {
+                if (childData.streakDays !== streak || childData.idealWeeksInRow !== idealWeeksInRow) {
+                    updateChild({
+                        ...childData,
+                        streakDays: streak,
+                        idealWeeksInRow: idealWeeksInRow
+                    });
+                }
+            }, [streak, idealWeeksInRow]);
+            
+            // Check for rewards
+            useEffect(() => {
+                checkRewards(childData, data.rewards, updateChild, showRewardModal);
+            }, [childData.pointsTotal, childData.streakDays, childData.idealWeeksInRow]);
+            
+            // Get today's completions
+            const todayCompletions = completions.filter(c => c.childId === childData.id && c.date === today);
+            
+            // Toggle task
+            const toggleTask = (taskId) => {
+                const existing = todayCompletions.find(c => c.taskId === taskId);
+                
+                if (existing) {
+                    // Child can only withdraw completion before parent approval.
+                    if (!existing.approvedByParent) {
+                        removeCompletion(existing.id);
+                    }
+                } else {
+                    // Add completion (marked by child, needs parent approval)
+                    addCompletion(childData.id, taskId, true);
+                }
+            };
+            
+            // Get last 30 days for calendar
+            const calendarDays = [];
+            for (let i = 29; i >= 0; i--) {
+                const date = addDays(today, -i);
+                const status = evaluateDay(childData, date, completions, tasks);
+                calendarDays.push({ date, status });
+            }
+            
+            // Get unlocked rewards
+            const unlockedRewards = childData.unlockedRewards
+                .filter(ur => !ur.claimedAt)
+                .map(ur => data.rewards.find(r => r.id === ur.rewardId))
+                .filter(Boolean);
+
+            return (
+                <div className="fade-in">
+                    <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <button className="btn btn-secondary" onClick={() => setCurrentView('home')}>
+                            ← Wróć
+                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div className="avatar avatar-sm">{childData.avatar}</div>
+                            <span className="text-xl text-bold">{childData.name}</span>
+                        </div>
+                    </div>
+
+                    {/* Today Status */}
+                    <div className="glass-card mb-3">
+                        <div style={{ textAlign: 'center' }}>
+                            <h2 className="text-2xl text-bold mb-2">Status Dzisiaj</h2>
+                            <div className={`badge badge-${todayStatus === 'PASSED' ? 'passed' : todayStatus === 'FAILED' ? 'failed' : 'na'}`}>
+                                {todayStatus === 'PASSED' ? '✅ ZALICZONY' : todayStatus === 'FAILED' ? '❌ NIEZALICZONY' : '⚪ DZIEŃ NIEAKTYWNY'}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="grid grid-3 mb-3">
+                        <div className="glass-card text-center">
+                            <div className="text-3xl text-bold">{streak}</div>
+                            <div style={{ opacity: 0.8, marginTop: '8px' }}>🔥 Passa dni</div>
+                        </div>
+                        <div className="glass-card text-center">
+                            <div className="text-3xl text-bold">{childData.pointsTotal}</div>
+                            <div style={{ opacity: 0.8, marginTop: '8px' }}>⭐ Punkty</div>
+                        </div>
+                        <div className="glass-card text-center">
+                            <div className="text-3xl text-bold">{idealWeeksInRow}</div>
+                            <div style={{ opacity: 0.8, marginTop: '8px' }}>🏆 Idealne tyg.</div>
+                        </div>
+                    </div>
+
+                    {/* Tasks */}
+                    <div className="glass-card mb-3">
+                        <h3 className="text-xl text-bold mb-2">Dzisiejsze Zadania</h3>
+                        {tasks.map(task => {
+                            const completion = todayCompletions.find(c => c.taskId === task.id);
+                            const isDone = !!completion;
+                            const isApproved = completion?.approvedByParent;
+                            
+                            return (
+                                <div key={task.id} className="task-item">
+                                    <div 
+                                        className={`task-checkbox ${isDone ? 'checked' : ''}`}
+                                        style={{ cursor: isApproved ? 'not-allowed' : 'pointer', opacity: isApproved ? 0.85 : 1 }}
+                                        onClick={() => toggleTask(task.id)}
+                                    />
+                                    <div style={{ flex: 1 }}>
+                                        <div>{task.name}</div>
+                                        <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                                            {TIER_LABELS[task.tier]}
+                                            {isDone && !isApproved && ' - Czeka na akceptację'}
+                                            {isApproved && ' - Zatwierdzone ✓'}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Calendar */}
+                    <div className="glass-card mb-3">
+                        <h3 className="text-xl text-bold mb-2">Kalendarz (ostatnie 30 dni)</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '6px' }}>
+                            {calendarDays.map(({ date, status }) => (
+                                <div 
+                                    key={date}
+                                    className={`calendar-day ${status.toLowerCase()}`}
+                                    title={`${date}: ${status}`}
+                                >
+                                    {status === 'PASSED' ? '✓' : status === 'FAILED' ? '✗' : '-'}
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ display: 'flex', gap: '16px', marginTop: '16px', fontSize: '14px', justifyContent: 'center' }}>
+                            <span>✓ = Zaliczony</span>
+                            <span>✗ = Niezaliczony</span>
+                            <span>- = Nieaktywny</span>
+                        </div>
+                    </div>
+
+                    {/* Unlocked Rewards */}
+                    {unlockedRewards.length > 0 && (
+                        <div className="glass-card pulse">
+                            <h3 className="text-xl text-bold mb-2">🎁 Odblokowane Nagrody!</h3>
+                            <p className="mb-2" style={{ opacity: 0.9 }}>Odbierz je u rodziców:</p>
+                            {unlockedRewards.map(reward => (
+                                <div key={reward.id} className="task-item" style={{ background: 'rgba(16, 185, 129, 0.2)' }}>
+                                    <span style={{ fontSize: '24px' }}>🎁</span>
+                                    <div style={{ flex: 1 }}>
+                                        <div className="text-bold">{reward.name}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // ==================== CHILDREN MANAGEMENT ====================
+        function ChildrenManagement({ data, setData, showToast }) {
+            const [isAdding, setIsAdding] = useState(false);
+            const [editingChild, setEditingChild] = useState(null);
+            const [formData, setFormData] = useState({
+                name: '',
+                avatar: '😊',
+                activeDays: [1, 2, 3, 4, 5]
+            });
+
+            const avatarOptions = ['😊', '🦁', '🦄', '🐼', '🐨', '🦊', '🐸', '🦉', '🐙', '🦋', '🌈', '⭐', '🚀', '🎨', '🎮', '⚽'];
+
+            const handleAddChild = () => {
+                if (!formData.name.trim()) return;
+
+                const newChild = {
+                    id: `child-${Date.now()}`,
+                    name: formData.name,
+                    avatar: formData.avatar,
+                    activeDays: formData.activeDays,
+                    pointsTotal: 0,
+                    pointsLedger: [],
+                    streakDays: 0,
+                    idealWeeks: 0,
+                    idealWeeksInRow: 0,
+                    unlockedRewards: [],
+                    dayPointsGranted: {},
+                    weekBonusGranted: {}
+                };
+
+                setData(prev => ({
+                    ...prev,
+                    children: [...prev.children, newChild]
+                }));
+
+                setFormData({ name: '', avatar: '😊', activeDays: [1, 2, 3, 4, 5] });
+                setIsAdding(false);
+                showToast('Dodano!', `Dziecko ${formData.name} zostało dodane`, 'success');
+            };
+
+            const handleEditChild = () => {
+                if (!formData.name.trim() || !editingChild) return;
+
+                setData(prev => ({
+                    ...prev,
+                    children: prev.children.map(c => 
+                        c.id === editingChild.id 
+                            ? { ...c, name: formData.name, avatar: formData.avatar, activeDays: formData.activeDays }
+                            : c
+                    )
+                }));
+
+                setEditingChild(null);
+                setFormData({ name: '', avatar: '😊', activeDays: [1, 2, 3, 4, 5] });
+                showToast('Zapisano!', 'Zmiany zostały zapisane', 'success');
+            };
+
+            const handleDeleteChild = (childId) => {
+                if (!confirm('Czy na pewno chcesz usunąć to dziecko? Wszystkie dane zostaną utracone.')) return;
+
+                const child = data.children.find(c => c.id === childId);
+                setData(prev => ({
+                    ...prev,
+                    children: prev.children.filter(c => c.id !== childId),
+                    tasks: prev.tasks.filter(t => t.childId !== childId),
+                    completions: prev.completions.filter(c => c.childId !== childId)
+                }));
+                showToast('Usunięto', `Dziecko ${child?.name} zostało usunięte`, 'info');
+            };
+
+            const startEdit = (child) => {
+                setEditingChild(child);
+                setFormData({
+                    name: child.name,
+                    avatar: child.avatar,
+                    activeDays: child.activeDays
+                });
+                setIsAdding(false);
+            };
+
+            const toggleDay = (day) => {
+                setFormData(prev => ({
+                    ...prev,
+                    activeDays: prev.activeDays.includes(day)
+                        ? prev.activeDays.filter(d => d !== day)
+                        : [...prev.activeDays, day].sort()
+                }));
+            };
+
+            const today = getTodayDate();
+
+            return (
+                <div>
+                    <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between' }}>
+                        <h2 className="text-2xl text-bold">Zarządzaj Dziećmi</h2>
+                        <button 
+                            className="btn btn-primary"
+                            onClick={() => {
+                                setIsAdding(true);
+                                setEditingChild(null);
+                                setFormData({ name: '', avatar: '😊', activeDays: [1, 2, 3, 4, 5] });
+                            }}
+                        >
+                            + Dodaj Dziecko
+                        </button>
+                    </div>
+
+                    {(isAdding || editingChild) && (
+                        <div className="glass-card mb-3">
+                            <h3 className="text-xl text-bold mb-2">
+                                {editingChild ? 'Edytuj Dziecko' : 'Dodaj Nowe Dziecko'}
+                            </h3>
+                            
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Imię:</label>
+                                <input 
+                                    type="text"
+                                    className="input"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                    placeholder="Wpisz imię..."
+                                />
+                            </div>
+
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Avatar:</label>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '8px' }}>
+                                    {avatarOptions.map(emoji => (
+                                        <div
+                                            key={emoji}
+                                            onClick={() => setFormData(prev => ({ ...prev, avatar: emoji }))}
+                                            style={{
+                                                fontSize: '32px',
+                                                padding: '8px',
+                                                textAlign: 'center',
+                                                cursor: 'pointer',
+                                                borderRadius: '12px',
+                                                background: formData.avatar === emoji ? 'rgba(99, 102, 241, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+                                                border: formData.avatar === emoji ? '2px solid #6366f1' : '2px solid transparent',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            {emoji}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Dni Aktywne:</label>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    {DAYS_OF_WEEK.map((day, index) => {
+                                        const dayNum = index + 1;
+                                        const isActive = formData.activeDays.includes(dayNum);
+                                        return (
+                                            <button
+                                                key={dayNum}
+                                                onClick={() => toggleDay(dayNum)}
+                                                className="btn"
+                                                style={{
+                                                    background: isActive 
+                                                        ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                                                        : 'rgba(255, 255, 255, 0.1)',
+                                                    border: isActive ? 'none' : '1px solid rgba(255, 255, 255, 0.3)',
+                                                    padding: '8px 16px'
+                                                }}
+                                            >
+                                                {day}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button 
+                                    className="btn btn-secondary"
+                                    style={{ flex: 1 }}
+                                    onClick={() => {
+                                        setIsAdding(false);
+                                        setEditingChild(null);
+                                        setFormData({ name: '', avatar: '😊', activeDays: [1, 2, 3, 4, 5] });
+                                    }}
+                                >
+                                    Anuluj
+                                </button>
+                                <button 
+                                    className="btn btn-primary"
+                                    style={{ flex: 1 }}
+                                    onClick={editingChild ? handleEditChild : handleAddChild}
+                                >
+                                    {editingChild ? 'Zapisz Zmiany' : 'Dodaj'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="grid grid-2">
+                        {data.children.map(child => {
+                            const completions = data.completions;
+                            const tasks = data.tasks;
+                            const streak = calculateStreak(child, today, completions, tasks);
+                            const idealWeeksInRow = calculateIdealWeeksInRow(child, today, completions, tasks);
+                            
+                            return (
+                                <div key={child.id} className="glass-card">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+                                        <div className="avatar">{child.avatar}</div>
+                                        <div style={{ flex: 1 }}>
+                                            <h3 className="text-xl text-bold">{child.name}</h3>
+                                            <div style={{ fontSize: '14px', opacity: 0.7 }}>
+                                                Aktywne dni: {child.activeDays.map(d => DAYS_OF_WEEK[d - 1]).join(', ')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="grid grid-3" style={{ gap: '12px', marginBottom: '16px' }}>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div className="text-2xl text-bold">{child.pointsTotal}</div>
+                                            <div style={{ fontSize: '12px', opacity: 0.7 }}>Punkty</div>
+                                        </div>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div className="text-2xl text-bold">{streak}</div>
+                                            <div style={{ fontSize: '12px', opacity: 0.7 }}>Passa</div>
+                                        </div>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div className="text-2xl text-bold">{idealWeeksInRow}</div>
+                                            <div style={{ fontSize: '12px', opacity: 0.7 }}>Ideal. tyg.</div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button 
+                                            className="btn btn-primary"
+                                            style={{ flex: 1 }}
+                                            onClick={() => startEdit(child)}
+                                        >
+                                            ✏️ Edytuj
+                                        </button>
+                                        <button 
+                                            className="btn btn-danger"
+                                            style={{ flex: 1 }}
+                                            onClick={() => handleDeleteChild(child.id)}
+                                        >
+                                            🗑️ Usuń
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {data.children.length === 0 && (
+                        <div className="glass-card text-center">
+                            <p className="text-lg">Brak dzieci. Dodaj pierwsze dziecko!</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // ==================== TASKS MANAGEMENT ====================
+        function TasksManagement({ data, setData, showToast }) {
+            const [isAdding, setIsAdding] = useState(false);
+            const [editingTask, setEditingTask] = useState(null);
+            const [formData, setFormData] = useState({
+                childId: '',
+                name: '',
+                tier: 'MIN'
+            });
+
+            const handleAddTask = () => {
+                if (!formData.name.trim() || !formData.childId) return;
+
+                const newTask = {
+                    id: `task-${Date.now()}`,
+                    childId: formData.childId,
+                    name: formData.name,
+                    tier: formData.tier,
+                    points: 0
+                };
+
+                setData(prev => ({
+                    ...prev,
+                    tasks: [...prev.tasks, newTask]
+                }));
+
+                setFormData({ childId: '', name: '', tier: 'MIN' });
+                setIsAdding(false);
+                showToast('Dodano!', `Zadanie "${formData.name}" zostało dodane`, 'success');
+            };
+
+            const handleEditTask = () => {
+                if (!formData.name.trim() || !editingTask) return;
+
+                setData(prev => ({
+                    ...prev,
+                    tasks: prev.tasks.map(t => 
+                        t.id === editingTask.id 
+                            ? { ...t, name: formData.name, tier: formData.tier, childId: formData.childId }
+                            : t
+                    )
+                }));
+
+                setEditingTask(null);
+                setFormData({ childId: '', name: '', tier: 'MIN' });
+                showToast('Zapisano!', 'Zmiany zostały zapisane', 'success');
+            };
+
+            const handleDeleteTask = (taskId) => {
+                if (!confirm('Czy na pewno chcesz usunąć to zadanie?')) return;
+
+                const task = data.tasks.find(t => t.id === taskId);
+                setData(prev => ({
+                    ...prev,
+                    tasks: prev.tasks.filter(t => t.id !== taskId),
+                    completions: prev.completions.filter(c => c.taskId !== taskId)
+                }));
+                showToast('Usunięto', `Zadanie "${task?.name}" zostało usunięte`, 'info');
+            };
+
+            const startEdit = (task) => {
+                setEditingTask(task);
+                setFormData({
+                    childId: task.childId,
+                    name: task.name,
+                    tier: task.tier
+                });
+                setIsAdding(false);
+            };
+
+            // Group tasks by child
+            const tasksByChild = data.children.map(child => ({
+                child,
+                tasks: data.tasks.filter(t => t.childId === child.id)
+            }));
+
+            return (
+                <div>
+                    <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between' }}>
+                        <h2 className="text-2xl text-bold">Zarządzaj Zadaniami</h2>
+                        <button 
+                            className="btn btn-primary"
+                            onClick={() => {
+                                setIsAdding(true);
+                                setEditingTask(null);
+                                setFormData({ 
+                                    childId: data.children[0]?.id || '', 
+                                    name: '', 
+                                    tier: 'MIN' 
+                                });
+                            }}
+                            disabled={data.children.length === 0}
+                        >
+                            + Dodaj Zadanie
+                        </button>
+                    </div>
+
+                    {data.children.length === 0 && (
+                        <div className="glass-card text-center">
+                            <p className="text-lg">Najpierw dodaj dzieci w zakładce "Zarządzaj dziećmi"</p>
+                        </div>
+                    )}
+
+                    {(isAdding || editingTask) && data.children.length > 0 && (
+                        <div className="glass-card mb-3">
+                            <h3 className="text-xl text-bold mb-2">
+                                {editingTask ? 'Edytuj Zadanie' : 'Dodaj Nowe Zadanie'}
+                            </h3>
+                            
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Dziecko:</label>
+                                <select 
+                                    className="select"
+                                    value={formData.childId}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, childId: e.target.value }))}
+                                >
+                                    {data.children.map(child => (
+                                        <option key={child.id} value={child.id}>
+                                            {child.avatar} {child.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Nazwa zadania:</label>
+                                <input 
+                                    type="text"
+                                    className="input"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                    placeholder="np. Posprzątaj pokój..."
+                                />
+                            </div>
+
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Poziom zadania:</label>
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    {Object.entries(TIER_LABELS).map(([tier, label]) => (
+                                        <button
+                                            key={tier}
+                                            onClick={() => setFormData(prev => ({ ...prev, tier }))}
+                                            className="btn"
+                                            style={{
+                                                flex: 1,
+                                                background: formData.tier === tier 
+                                                    ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)'
+                                                    : 'rgba(255, 255, 255, 0.1)',
+                                                border: formData.tier === tier ? 'none' : '1px solid rgba(255, 255, 255, 0.3)'
+                                            }}
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div style={{ marginTop: '8px', fontSize: '14px', opacity: 0.7 }}>
+                                    {formData.tier === 'MIN' && '⭐ Zadania obowiązkowe - decydują o zaliczeniu dnia'}
+                                    {formData.tier === 'PLUS' && '💎 Zadania opcjonalne - nie wpływają na zaliczenie'}
+                                    {formData.tier === 'WEEKLY' && '🏆 Zadania tygodniowe - nie wpływają na zaliczenie'}
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button 
+                                    className="btn btn-secondary"
+                                    style={{ flex: 1 }}
+                                    onClick={() => {
+                                        setIsAdding(false);
+                                        setEditingTask(null);
+                                        setFormData({ childId: '', name: '', tier: 'MIN' });
+                                    }}
+                                >
+                                    Anuluj
+                                </button>
+                                <button 
+                                    className="btn btn-primary"
+                                    style={{ flex: 1 }}
+                                    onClick={editingTask ? handleEditTask : handleAddTask}
+                                >
+                                    {editingTask ? 'Zapisz Zmiany' : 'Dodaj'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {tasksByChild.map(({ child, tasks }) => (
+                        <div key={child.id} className="glass-card mb-3">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                                <div className="avatar avatar-sm">{child.avatar}</div>
+                                <h3 className="text-xl text-bold">{child.name}</h3>
+                                <span style={{ marginLeft: 'auto', opacity: 0.7 }}>
+                                    {tasks.length} {tasks.length === 1 ? 'zadanie' : 'zadań'}
+                                </span>
+                            </div>
+
+                            {tasks.length === 0 ? (
+                                <p style={{ opacity: 0.7, textAlign: 'center', padding: '20px 0' }}>
+                                    Brak zadań. Dodaj pierwsze zadanie!
+                                </p>
+                            ) : (
+                                tasks.map(task => (
+                                    <div key={task.id} className="task-item">
+                                        <div style={{ flex: 1 }}>
+                                            <div className="text-bold">{task.name}</div>
+                                            <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                                                {TIER_LABELS[task.tier]}
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button 
+                                                className="btn btn-primary"
+                                                style={{ padding: '8px 16px' }}
+                                                onClick={() => startEdit(task)}
+                                            >
+                                                ✏️
+                                            </button>
+                                            <button 
+                                                className="btn btn-danger"
+                                                style={{ padding: '8px 16px' }}
+                                                onClick={() => handleDeleteTask(task.id)}
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        // ==================== REWARDS MANAGEMENT ====================
+        function RewardsManagement({ data, setData, claimReward, showToast }) {
+            const [isAdding, setIsAdding] = useState(false);
+            const [editingReward, setEditingReward] = useState(null);
+            const [formData, setFormData] = useState({
+                name: '',
+                pointsThreshold: null,
+                streakThreshold: null,
+                idealWeeksThreshold: null
+            });
+
+            const handleAddReward = () => {
+                if (!formData.name.trim()) return;
+                if (!formData.pointsThreshold && !formData.streakThreshold && !formData.idealWeeksThreshold) {
+                    alert('Musisz ustawić przynajmniej jeden warunek (punkty, passa lub idealne tygodnie)');
+                    return;
+                }
+
+                const newReward = {
+                    id: `reward-${Date.now()}`,
+                    name: formData.name,
+                    pointsThreshold: formData.pointsThreshold ? parseInt(formData.pointsThreshold) : null,
+                    streakThreshold: formData.streakThreshold ? parseInt(formData.streakThreshold) : null,
+                    idealWeeksThreshold: formData.idealWeeksThreshold ? parseInt(formData.idealWeeksThreshold) : null
+                };
+
+                setData(prev => ({
+                    ...prev,
+                    rewards: [...prev.rewards, newReward]
+                }));
+
+                setFormData({ name: '', pointsThreshold: null, streakThreshold: null, idealWeeksThreshold: null });
+                setIsAdding(false);
+            };
+
+            const handleEditReward = () => {
+                if (!formData.name.trim() || !editingReward) return;
+                if (!formData.pointsThreshold && !formData.streakThreshold && !formData.idealWeeksThreshold) {
+                    alert('Musisz ustawić przynajmniej jeden warunek');
+                    return;
+                }
+
+                setData(prev => ({
+                    ...prev,
+                    rewards: prev.rewards.map(r => 
+                        r.id === editingReward.id 
+                            ? {
+                                ...r,
+                                name: formData.name,
+                                pointsThreshold: formData.pointsThreshold ? parseInt(formData.pointsThreshold) : null,
+                                streakThreshold: formData.streakThreshold ? parseInt(formData.streakThreshold) : null,
+                                idealWeeksThreshold: formData.idealWeeksThreshold ? parseInt(formData.idealWeeksThreshold) : null
+                            }
+                            : r
+                    )
+                }));
+
+                setEditingReward(null);
+                setFormData({ name: '', pointsThreshold: null, streakThreshold: null, idealWeeksThreshold: null });
+            };
+
+            const handleDeleteReward = (rewardId) => {
+                if (!confirm('Czy na pewno chcesz usunąć tę nagrodę?')) return;
+
+                setData(prev => ({
+                    ...prev,
+                    rewards: prev.rewards.filter(r => r.id !== rewardId),
+                    children: prev.children.map(c => ({
+                        ...c,
+                        unlockedRewards: c.unlockedRewards.filter(ur => ur.rewardId !== rewardId)
+                    }))
+                }));
+            };
+
+            const startEdit = (reward) => {
+                setEditingReward(reward);
+                setFormData({
+                    name: reward.name,
+                    pointsThreshold: reward.pointsThreshold || '',
+                    streakThreshold: reward.streakThreshold || '',
+                    idealWeeksThreshold: reward.idealWeeksThreshold || ''
+                });
+                setIsAdding(false);
+            };
+
+            return (
+                <div>
+                    <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between' }}>
+                        <h2 className="text-2xl text-bold">Zarządzaj Nagrodami</h2>
+                        <button 
+                            className="btn btn-primary"
+                            onClick={() => {
+                                setIsAdding(true);
+                                setEditingReward(null);
+                                setFormData({ name: '', pointsThreshold: '', streakThreshold: '', idealWeeksThreshold: '' });
+                            }}
+                        >
+                            + Dodaj Nagrodę
+                        </button>
+                    </div>
+
+                    {(isAdding || editingReward) && (
+                        <div className="glass-card mb-3">
+                            <h3 className="text-xl text-bold mb-2">
+                                {editingReward ? 'Edytuj Nagrodę' : 'Dodaj Nową Nagrodę'}
+                            </h3>
+                            
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Nazwa nagrody:</label>
+                                <input 
+                                    type="text"
+                                    className="input"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                    placeholder="np. Dodatkowy czas ekranowy"
+                                />
+                            </div>
+
+                            <div style={{ background: 'rgba(99, 102, 241, 0.2)', padding: '16px', borderRadius: '12px', marginBottom: '16px' }}>
+                                <p style={{ marginBottom: '12px', fontWeight: 600 }}>
+                                    Warunki odblokowania (co najmniej jeden musi być ustawiony):
+                                </p>
+
+                                <div style={{ marginBottom: '12px' }}>
+                                    <label style={{ display: 'block', marginBottom: '8px' }}>⭐ Próg punktów:</label>
+                                    <input 
+                                        type="number"
+                                        className="input"
+                                        value={formData.pointsThreshold}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, pointsThreshold: e.target.value }))}
+                                        placeholder="np. 30"
+                                        min="0"
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: '12px' }}>
+                                    <label style={{ display: 'block', marginBottom: '8px' }}>🔥 Passa dni (streak):</label>
+                                    <input 
+                                        type="number"
+                                        className="input"
+                                        value={formData.streakThreshold}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, streakThreshold: e.target.value }))}
+                                        placeholder="np. 7"
+                                        min="0"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px' }}>🏆 Idealne tygodnie z rzędu:</label>
+                                    <input 
+                                        type="number"
+                                        className="input"
+                                        value={formData.idealWeeksThreshold}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, idealWeeksThreshold: e.target.value }))}
+                                        placeholder="np. 2"
+                                        min="0"
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button 
+                                    className="btn btn-secondary"
+                                    style={{ flex: 1 }}
+                                    onClick={() => {
+                                        setIsAdding(false);
+                                        setEditingReward(null);
+                                        setFormData({ name: '', pointsThreshold: '', streakThreshold: '', idealWeeksThreshold: '' });
+                                    }}
+                                >
+                                    Anuluj
+                                </button>
+                                <button 
+                                    className="btn btn-primary"
+                                    style={{ flex: 1 }}
+                                    onClick={editingReward ? handleEditReward : handleAddReward}
+                                >
+                                    {editingReward ? 'Zapisz Zmiany' : 'Dodaj'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Unlocked Rewards to Claim */}
+                    <div className="glass-card mb-3">
+                        <h3 className="text-xl text-bold mb-2">🎁 Nagrody do Wydania</h3>
+                        {data.children.map(child => {
+                            const unclaimedRewards = child.unlockedRewards
+                                .filter(ur => !ur.claimedAt)
+                                .map(ur => ({
+                                    ...data.rewards.find(r => r.id === ur.rewardId),
+                                    unlockedAt: ur.unlockedAt
+                                }))
+                                .filter(Boolean);
+                            
+                            if (unclaimedRewards.length === 0) return null;
+                            
+                            return (
+                                <div key={child.id} style={{ marginBottom: '16px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                                        <div className="avatar avatar-sm">{child.avatar}</div>
+                                        <h4 className="text-bold">{child.name}</h4>
+                                    </div>
+                                    
+                                    {unclaimedRewards.map(reward => (
+                                        <div key={reward.id} className="task-item" style={{ background: 'rgba(16, 185, 129, 0.2)', marginBottom: '8px' }}>
+                                            <span style={{ fontSize: '24px' }}>🎁</span>
+                                            <div style={{ flex: 1 }}>
+                                                <div className="text-bold">{reward.name}</div>
+                                                <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                                                    Odblokowano: {new Date(reward.unlockedAt).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                            <button 
+                                                className="btn btn-success"
+                                                onClick={() => claimReward(child.id, reward.id)}
+                                            >
+                                                Wydano
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        })}
+                        
+                        {data.children.every(c => c.unlockedRewards.filter(ur => !ur.claimedAt).length === 0) && (
+                            <p style={{ opacity: 0.7, textAlign: 'center', padding: '20px 0' }}>
+                                Brak nagród do wydania
+                            </p>
+                        )}
+                    </div>
+
+                    {/* All Rewards List */}
+                    <div className="glass-card">
+                        <h3 className="text-xl text-bold mb-2">📋 Wszystkie Nagrody</h3>
+                        {data.rewards.length === 0 ? (
+                            <p style={{ opacity: 0.7, textAlign: 'center', padding: '20px 0' }}>
+                                Brak nagród. Dodaj pierwszą nagrodę!
+                            </p>
+                        ) : (
+                            data.rewards.map(reward => (
+                                <div key={reward.id} className="task-item">
+                                    <span style={{ fontSize: '24px' }}>🎁</span>
+                                    <div style={{ flex: 1 }}>
+                                        <div className="text-bold">{reward.name}</div>
+                                        <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                                            {reward.pointsThreshold && `⭐ ${reward.pointsThreshold} punktów`}
+                                            {reward.pointsThreshold && (reward.streakThreshold || reward.idealWeeksThreshold) && ' • '}
+                                            {reward.streakThreshold && `🔥 ${reward.streakThreshold} dni passy`}
+                                            {reward.streakThreshold && reward.idealWeeksThreshold && ' • '}
+                                            {reward.idealWeeksThreshold && `🏆 ${reward.idealWeeksThreshold} idealnych tygodni`}
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button 
+                                            className="btn btn-primary"
+                                            style={{ padding: '8px 16px' }}
+                                            onClick={() => startEdit(reward)}
+                                        >
+                                            ✏️
+                                        </button>
+                                        <button 
+                                            className="btn btn-danger"
+                                            style={{ padding: '8px 16px' }}
+                                            onClick={() => handleDeleteReward(reward.id)}
+                                        >
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // ==================== SETTINGS MANAGEMENT ====================
+        function SettingsManagement({ data, setData, showToast }) {
+            const savedSettings = normalizeAppSettings(data.settings);
+            const [pointsPerDay, setPointsPerDay] = useState(savedSettings.pointsPerPassedDay);
+            const [bonusIdealWeek, setBonusIdealWeek] = useState(savedSettings.bonusIdealWeek);
+            const [adminPin, setAdminPin] = useState(savedSettings.adminPin);
+            const [familyGoal, setFamilyGoal] = useState(normalizeFamilyGoal(data.familyGoal));
+            const totalPoints = data.children.reduce((sum, c) => sum + c.pointsTotal, 0);
+            const safeGoalThreshold = normalizeFamilyGoalThreshold(familyGoal.threshold);
+            const familyGoalProgress = Math.min(100, (totalPoints / safeGoalThreshold) * 100);
+
+            const handleSave = () => {
+                const normalizedFamilyGoal = normalizeFamilyGoal(familyGoal);
+                const normalizedSettings = normalizeAppSettings({
+                    pointsPerPassedDay: pointsPerDay,
+                    bonusIdealWeek: bonusIdealWeek,
+                    adminPin: adminPin
+                });
+                setData(prev => ({
+                    ...prev,
+                    familyGoal: normalizedFamilyGoal,
+                    settings: normalizedSettings
+                }));
+                setPointsPerDay(normalizedSettings.pointsPerPassedDay);
+                setBonusIdealWeek(normalizedSettings.bonusIdealWeek);
+                setAdminPin(normalizedSettings.adminPin);
+                setFamilyGoal(normalizedFamilyGoal);
+                showToast('Zapisano!', 'Ustawienia zostały zapisane', 'success');
+            };
+
+            const handleResetData = () => {
+                if (!confirm('Czy na pewno chcesz zresetować WSZYSTKIE dane? To działanie jest nieodwracalne!')) return;
+                if (!confirm('OSTATNIE OSTRZEŻENIE: Wszystkie dane dzieci, zadania i postępy zostaną utracone!')) return;
+
+                localStorage.removeItem('familyManagerData');
+                window.location.reload();
+            };
+
+            const handleExportData = () => {
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `family-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+                showToast('Eksportowano!', 'Dane zostały wyeksportowane', 'success');
+            };
+
+            const handleImportData = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        
+                        // Validate data structure
+                        if (!importedData.children || !importedData.tasks || !importedData.rewards) {
+                            showToast('Błąd!', 'Nieprawidłowy format pliku backup', 'error');
+                            return;
+                        }
+
+                        if (!confirm('Czy na pewno chcesz zaimportować dane? Obecne dane zostaną nadpisane!')) return;
+
+                        const normalizedImportedData = {
+                            ...importedData,
+                            familyGoal: normalizeFamilyGoal(importedData.familyGoal),
+                            settings: normalizeAppSettings(importedData.settings)
+                        };
+
+                        setData(normalizedImportedData);
+                        localStorage.setItem('familyManagerData', JSON.stringify(normalizedImportedData));
+                        showToast('Zaimportowano!', 'Dane zostały zaimportowane pomyślnie', 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } catch (error) {
+                        showToast('Błąd!', 'Błąd podczas importu: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            return (
+                <div>
+                    <h2 className="text-2xl text-bold mb-3">Ustawienia Systemu</h2>
+
+                    <div className="glass-card mb-3">
+                        <h3 className="text-xl text-bold mb-2">🎯 Cel Rodzinny</h3>
+                        
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Nazwa celu:</label>
+                            <input 
+                                type="text"
+                                className="input"
+                                value={familyGoal.name}
+                                onChange={(e) => setFamilyGoal(prev => ({ ...prev, name: e.target.value }))}
+                                placeholder="np. Wyjście na pizzę"
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Próg punktów:</label>
+                            <input 
+                                type="number"
+                                className="input"
+                                value={familyGoal.threshold}
+                                onChange={(e) => setFamilyGoal(prev => ({ ...prev, threshold: normalizeFamilyGoalThreshold(e.target.value) }))}
+                                min="1"
+                            />
+                        </div>
+
+                        <div className="progress-bar mb-2">
+                            <div 
+                                className="progress-fill"
+                                style={{ 
+                                    width: `${familyGoalProgress}%`
+                                }}
+                            >
+                                {totalPoints} / {safeGoalThreshold}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="glass-card mb-3">
+                        <h3 className="text-xl text-bold mb-2">⚙️ Parametry Punktów</h3>
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Punkty za zaliczony dzień:</label>
+                            <input
+                                type="number"
+                                className="input"
+                                value={pointsPerDay}
+                                onChange={(e) => setPointsPerDay(normalizeNonNegativeInt(e.target.value, 0))}
+                                min="0"
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Bonus za idealny tydzień:</label>
+                            <input
+                                type="number"
+                                className="input"
+                                value={bonusIdealWeek}
+                                onChange={(e) => setBonusIdealWeek(normalizeNonNegativeInt(e.target.value, 0))}
+                                min="0"
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Kod PIN administratora (4-8 cyfr):</label>
+                            <input
+                                type="password"
+                                className="input"
+                                value={adminPin}
+                                onChange={(e) => setAdminPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                                placeholder="np. 1234"
+                                inputMode="numeric"
+                            />
+                        </div>
+
+                        <div style={{ background: 'rgba(251, 191, 36, 0.2)', padding: '12px', borderRadius: '8px', fontSize: '14px' }}>
+                            Uwaga: po zapisaniu PIN musi mieć 4-8 cyfr, inaczej wróci do domyślnego 1234.
+                        </div>
+                    </div>
+
+                    <div className="glass-card mb-3">
+                        <h3 className="text-xl text-bold mb-2">📊 Statystyki Ogólne</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                            <div style={{ textAlign: 'center' }}>
+                                <div className="text-3xl text-bold">{data.children.length}</div>
+                                <div style={{ opacity: 0.7, marginTop: '4px' }}>Dzieci</div>
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <div className="text-3xl text-bold">{data.tasks.length}</div>
+                                <div style={{ opacity: 0.7, marginTop: '4px' }}>Zadań</div>
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <div className="text-3xl text-bold">{data.completions.length}</div>
+                                <div style={{ opacity: 0.7, marginTop: '4px' }}>Wykonań</div>
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <div className="text-3xl text-bold">
+                                    {data.children.reduce((sum, c) => sum + c.pointsTotal, 0)}
+                                </div>
+                                <div style={{ opacity: 0.7, marginTop: '4px' }}>Punktów razem</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="glass-card mb-3">
+                        <h3 className="text-xl text-bold mb-2">💾 Backup & Przywracanie</h3>
+                        <p style={{ marginBottom: '16px', opacity: 0.9 }}>
+                            Eksportuj dane do pliku JSON lub zaimportuj wcześniejszy backup.
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                            <button 
+                                className="btn btn-primary"
+                                style={{ flex: 1 }}
+                                onClick={handleExportData}
+                            >
+                                📥 Eksportuj Dane
+                            </button>
+                            <label 
+                                style={{ flex: 1 }}
+                                className="btn btn-primary"
+                            >
+                                📤 Importuj Dane
+                                <input 
+                                    type="file"
+                                    accept=".json"
+                                    style={{ display: 'none' }}
+                                    onChange={handleImportData}
+                                />
+                            </label>
+                        </div>
+                        <div style={{ background: 'rgba(99, 102, 241, 0.2)', padding: '12px', borderRadius: '8px', fontSize: '14px' }}>
+                            💡 Eksport tworzy kopię zapasową wszystkich danych. Import przywraca dane z pliku backup.
+                        </div>
+                    </div>
+
+                    <div className="glass-card mb-3" style={{ background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.5)' }}>
+                        <h3 className="text-xl text-bold mb-2">⚠️ Strefa Niebezpieczna</h3>
+                        <p style={{ marginBottom: '16px', opacity: 0.9 }}>
+                            Reset wszystkich danych aplikacji. To działanie jest <strong>nieodwracalne</strong>!
+                        </p>
+                        <button 
+                            className="btn btn-danger w-full"
+                            onClick={handleResetData}
+                        >
+                            🗑️ Resetuj Wszystkie Dane
+                        </button>
+                    </div>
+
+                    <button 
+                        className="btn btn-success w-full"
+                        onClick={handleSave}
+                    >
+                        💾 Zapisz Ustawienia
+                    </button>
+                </div>
+            );
+        }
+
+        // ==================== HISTORY VIEW ====================
+        function HistoryView({ data }) {
+            const today = getTodayDate();
+            const last7Days = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                last7Days.push(addDays(today, -i));
+            }
+
+            return (
+                <div>
+                    <h2 className="text-2xl text-bold mb-3">📅 Historia Ostatnich 7 Dni</h2>
+
+                    {data.children.map(child => {
+                        const tasks = data.tasks.filter(t => t.childId === child.id);
+                        const minTasks = tasks.filter(t => t.tier === 'MIN');
+
+                        return (
+                            <div key={child.id} className="glass-card mb-3">
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                                    <div className="avatar avatar-sm">{child.avatar}</div>
+                                    <h3 className="text-xl text-bold">{child.name}</h3>
+                                </div>
+
+                                <div style={{ overflowX: 'auto' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                        <thead>
+                                            <tr>
+                                                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid rgba(255,255,255,0.2)' }}>
+                                                    Data
+                                                </th>
+                                                {last7Days.map(date => {
+                                                    const dayOfWeek = getDayOfWeek(date);
+                                                    const dayName = DAYS_OF_WEEK[dayOfWeek === 0 ? 6 : dayOfWeek - 1];
+                                                    return (
+                                                        <th key={date} style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid rgba(255,255,255,0.2)' }}>
+                                                            <div>{dayName}</div>
+                                                            <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                                                                {new Date(date).getDate()}/{new Date(date).getMonth() + 1}
+                                                            </div>
+                                                        </th>
+                                                    );
+                                                })}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {minTasks.map(task => {
+                                                return (
+                                                    <tr key={task.id}>
+                                                        <td style={{ padding: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                                                            <div style={{ fontWeight: 600 }}>{task.name}</div>
+                                                            <div style={{ fontSize: '12px', opacity: 0.7 }}>{TIER_LABELS[task.tier]}</div>
+                                                        </td>
+                                                        {last7Days.map(date => {
+                                                            const completion = data.completions.find(c => 
+                                                                c.childId === child.id && 
+                                                                c.taskId === task.id && 
+                                                                c.date === date &&
+                                                                c.approvedByParent
+                                                            );
+                                                            const dayOfWeek = getDayOfWeek(date);
+                                                            const isActiveDay = child.activeDays.includes(dayOfWeek);
+                                                            
+                                                            return (
+                                                                <td 
+                                                                    key={date} 
+                                                                    style={{ 
+                                                                        padding: '12px', 
+                                                                        textAlign: 'center',
+                                                                        borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                                                        background: !isActiveDay ? 'rgba(255,255,255,0.05)' : 'transparent'
+                                                                    }}
+                                                                >
+                                                                    {!isActiveDay ? (
+                                                                        <span style={{ opacity: 0.5 }}>-</span>
+                                                                    ) : completion ? (
+                                                                        <span style={{ fontSize: '20px', color: '#10b981' }}>✓</span>
+                                                                    ) : (
+                                                                        <span style={{ fontSize: '20px', color: '#ef4444' }}>✗</span>
+                                                                    )}
+                                                                </td>
+                                                            );
+                                                        })}
+                                                    </tr>
+                                                );
+                                            })}
+                                            <tr style={{ background: 'rgba(99, 102, 241, 0.2)' }}>
+                                                <td style={{ padding: '12px', fontWeight: 700 }}>
+                                                    STATUS DNIA
+                                                </td>
+                                                {last7Days.map(date => {
+                                                    const status = evaluateDay(child, date, data.completions, tasks);
+                                                    return (
+                                                        <td key={date} style={{ padding: '12px', textAlign: 'center' }}>
+                                                            <div className={`badge badge-${status.toLowerCase()}`} style={{ fontSize: '12px', padding: '4px 8px' }}>
+                                                                {status}
+                                                            </div>
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(99, 102, 241, 0.2)', borderRadius: '12px' }}>
+                                    <h4 style={{ fontWeight: 600, marginBottom: '8px' }}>Podsumowanie 7 dni:</h4>
+                                    <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                                        <div>
+                                            <span style={{ opacity: 0.8 }}>Zaliczone dni: </span>
+                                            <span style={{ fontWeight: 700 }}>
+                                                {last7Days.filter(date => evaluateDay(child, date, data.completions, tasks) === 'PASSED').length}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span style={{ opacity: 0.8 }}>Niezaliczone dni: </span>
+                                            <span style={{ fontWeight: 700 }}>
+                                                {last7Days.filter(date => evaluateDay(child, date, data.completions, tasks) === 'FAILED').length}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span style={{ opacity: 0.8 }}>Punkty w tym okresie: </span>
+                                            <span style={{ fontWeight: 700 }}>
+                                                {child.pointsLedger
+                                                    .filter(entry => {
+                                                        const entryDate = entry.date;
+                                                        return last7Days.includes(entryDate);
+                                                    })
+                                                    .reduce((sum, entry) => sum + entry.points, 0)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            );
+        }
+
+        // ==================== ADMIN PANEL ====================
+        function AdminPanel({ data, setData, setCurrentView, updateChild, approveCompletion, showToast }) {
+            const [activeTab, setActiveTab] = useState('pending');
+
+            // Get pending approvals
+            const pendingApprovals = data.completions
+                .filter(c => c.doneByChild && !c.approvedByParent)
+                .sort((a, b) => {
+                    if (a.date !== b.date) return a.date.localeCompare(b.date);
+                    return (a.timestamp || '').localeCompare(b.timestamp || '');
+                });
+
+            const handleApprove = (completionId) => {
+                const completion = data.completions.find(c => c.id === completionId);
+                if (!completion) return;
+                
+                approveCompletion(completionId);
+                showToast('Zatwierdzone!', 'Zadanie zostało zatwierdzone', 'success');
+            };
+
+            const claimReward = (childId, rewardId) => {
+                const child = data.children.find(c => c.id === childId);
+                if (!child) return;
+                
+                const updatedRewards = child.unlockedRewards.map(ur => 
+                    ur.rewardId === rewardId ? { ...ur, claimedAt: new Date().toISOString() } : ur
+                );
+                
+                updateChild({
+                    ...child,
+                    unlockedRewards: updatedRewards
+                });
+            };
+
+            return (
+                <div className="fade-in">
+                    <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h1 className="text-3xl text-bold">Panel Administratora</h1>
+                        <button className="btn btn-secondary" onClick={() => setCurrentView('home')}>
+                            ← Wróć
+                        </button>
+                    </div>
+
+                    <div className="tabs">
+                        <button 
+                            className={`tab ${activeTab === 'pending' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('pending')}
+                        >
+                            Do zatwierdzenia ({pendingApprovals.length})
+                        </button>
+                        <button 
+                            className={`tab ${activeTab === 'children' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('children')}
+                        >
+                            Zarządzaj dziećmi
+                        </button>
+                        <button 
+                            className={`tab ${activeTab === 'tasks' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('tasks')}
+                        >
+                            Zarządzaj zadaniami
+                        </button>
+                        <button 
+                            className={`tab ${activeTab === 'rewards' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('rewards')}
+                        >
+                            Nagrody
+                        </button>
+                        <button 
+                            className={`tab ${activeTab === 'settings' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('settings')}
+                        >
+                            Ustawienia
+                        </button>
+                        <button 
+                            className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('history')}
+                        >
+                            Historia 7 dni
+                        </button>
+                    </div>
+
+                    {activeTab === 'pending' && (
+                        <div>
+                            {pendingApprovals.length === 0 ? (
+                                <div className="glass-card text-center">
+                                    <p className="text-lg">Brak zadań do zatwierdzenia! 🎉</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-2">
+                                    {pendingApprovals.map(completion => {
+                                        const child = data.children.find(c => c.id === completion.childId);
+                                        const task = data.tasks.find(t => t.id === completion.taskId);
+                                        
+                                        return (
+                                            <div key={completion.id} className="glass-card">
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                                                    <div className="avatar avatar-sm">{child?.avatar}</div>
+                                                    <div>
+                                                        <div className="text-bold">{child?.name}</div>
+                                                        <div style={{ fontSize: '14px', opacity: 0.7 }}>{task?.name}</div>
+                                                        <div style={{ fontSize: '12px', opacity: 0.6 }}>{completion.date}</div>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    className="btn btn-success w-full"
+                                                    onClick={() => handleApprove(completion.id)}
+                                                >
+                                                    ✓ Zatwierdź
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'children' && (
+                        <ChildrenManagement 
+                            data={data}
+                            setData={setData}
+                            showToast={showToast}
+                        />
+                    )}
+
+                    {activeTab === 'tasks' && (
+                        <TasksManagement 
+                            data={data}
+                            setData={setData}
+                            showToast={showToast}
+                        />
+                    )}
+
+                    {activeTab === 'settings' && (
+                        <SettingsManagement 
+                            data={data}
+                            setData={setData}
+                            showToast={showToast}
+                        />
+                    )}
+
+                    {activeTab === 'history' && (
+                        <HistoryView 
+                            data={data}
+                        />
+                    )}
+
+                    {activeTab === 'rewards' && (
+                        <RewardsManagement 
+                            data={data}
+                            setData={setData}
+                            claimReward={claimReward}
+                            showToast={showToast}
+                        />
+                    )}
+                </div>
+            );
+        }
+
+        // ==================== LEADERBOARD ====================
+        function Leaderboard({ data, setCurrentView }) {
+            const today = getTodayDate();
+            
+            const rankings = data.children.map(child => {
+                const completions = data.completions;
+                const tasks = data.tasks;
+                const streak = calculateStreak(child, today, completions, tasks);
+                const idealWeeksInRow = calculateIdealWeeksInRow(child, today, completions, tasks);
+                
+                return {
+                    ...child,
+                    currentStreak: streak,
+                    currentIdealWeeks: idealWeeksInRow
+                };
+            }).sort((a, b) => {
+                // Sort by ideal weeks first, then by streak, then by points
+                if (b.currentIdealWeeks !== a.currentIdealWeeks) {
+                    return b.currentIdealWeeks - a.currentIdealWeeks;
+                }
+                if (b.currentStreak !== a.currentStreak) {
+                    return b.currentStreak - a.currentStreak;
+                }
+                return b.pointsTotal - a.pointsTotal;
+            });
+
+            return (
+                <div className="fade-in">
+                    <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h1 className="text-3xl text-bold">🏆 Ranking</h1>
+                        <button className="btn btn-secondary" onClick={() => setCurrentView('home')}>
+                            ← Wróć
+                        </button>
+                    </div>
+
+                    <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+                        {rankings.map((child, index) => (
+                            <div 
+                                key={child.id} 
+                                className="glass-card mb-2"
+                                style={{
+                                    background: index === 0 
+                                        ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 140, 0, 0.3) 100%)'
+                                        : 'rgba(255, 255, 255, 0.15)'
+                                }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                    <div className="text-3xl text-bold" style={{ minWidth: '40px' }}>
+                                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
+                                    </div>
+                                    <div className="avatar">{child.avatar}</div>
+                                    <div style={{ flex: 1 }}>
+                                        <h3 className="text-xl text-bold">{child.name}</h3>
+                                        <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '14px' }}>
+                                            <span>🏆 {child.currentIdealWeeks} ideal. tyg.</span>
+                                            <span>🔥 {child.currentStreak} passa</span>
+                                            <span>⭐ {child.pointsTotal} pkt</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        // ==================== REWARD MODAL ====================
+        function RewardModal({ reward, childName, onClose }) {
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '80px', marginBottom: '16px' }}>🎉</div>
+                        <h2 className="text-3xl text-bold mb-2">BRAWO {childName}!</h2>
+                        <p className="text-xl mb-3">Masz odblokowaną nagrodę!</p>
+                        <div className="glass-card" style={{ background: 'rgba(255, 255, 255, 0.2)', marginBottom: '24px' }}>
+                            <div style={{ fontSize: '48px', marginBottom: '12px' }}>🎁</div>
+                            <h3 className="text-2xl text-bold">{reward.name}</h3>
+                        </div>
+                        <p className="mb-3" style={{ opacity: 0.9 }}>Odbierz ją u rodziców!</p>
+                        <button className="btn btn-primary w-full" onClick={onClose}>
+                            Super! 🎊
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // ==================== RENDER APP ====================
+        ReactDOM.render(<App />, document.getElementById('root'));
+
+        // Register service worker (PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js').catch((error) => {
+                    console.warn('Service worker registration failed:', error);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
