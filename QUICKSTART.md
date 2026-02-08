@@ -1,102 +1,102 @@
-﻿# đźš€ Szybki Start - Family Manager
+﻿# 🚀 Szybki Start - Family Manager
 
 ## Instalacja i Uruchomienie
 
-### Krok 1: OtwĂłrz aplikacjÄ™
-Po prostu otwĂłrz plik `family-manager.html` w przeglÄ…darce (Chrome, Edge, Firefox, Safari).
+### Krok 1: Otwórz aplikację
+Po prostu otwórz plik `family-manager.html` w przeglądarce (Chrome, Edge, Firefox, Safari).
 
-**Aplikacja dziaĹ‚a bez instalacji serwera!** Wszystkie zaleĹĽnoĹ›ci sÄ… pobierane z CDN.
+**Aplikacja działa bez instalacji serwera!** Wszystkie zależności są pobierane z CDN.
 
 ### Krok 2: Wybierz profil
-Na ekranie startowym zobaczysz 2 przykĹ‚adowe profile:
-- đź¦ Leo
-- đź¦„ Mia
+Na ekranie startowym zobaczysz 2 przykładowe profile:
+- 🦁 Leo
+- 🦄 Mia
 
-Kliknij na profil aby wejĹ›Ä‡ do panelu dziecka.
+Kliknij na profil aby wejść do panelu dziecka.
 
 ### Krok 3: Zaznaczaj zadania
-Dziecko moĹĽe zaznaczaÄ‡ wykonane zadania klikajÄ…c checkbox.
-Zadania oznaczone przez dziecko czekajÄ… na akceptacjÄ™ rodzica.
+Dziecko może zaznaczać wykonane zadania klikając checkbox.
+Zadania oznaczone przez dziecko czekają na akceptację rodzica.
 
-### Krok 4: DostÄ™p administratora
+### Krok 4: Dostęp administratora
 **Metoda 1 (Polecana)**:
-1. Przytrzymaj logo đźŹ  przez 2 sekundy
-2. Pojawi siÄ™ okno z proĹ›bÄ… o PIN
+1. Przytrzymaj logo 🏠 przez 2 sekundy
+2. Pojawi się okno z prośbą o PIN
 3. Wpisz: **1234**
 
 **Metoda 2**:
-MoĹĽesz zmieniÄ‡ kod aby pokazaÄ‡ przycisk admina bezpoĹ›rednio.
+Możesz zmienić kod aby pokazać przycisk admina bezpośrednio.
 
-### Krok 5: ZatwierdĹş zadania (Admin)
+### Krok 5: Zatwierdź zadania (Admin)
 W panelu administratora:
-1. ZakĹ‚adka "Do zatwierdzenia"
-2. Kliknij "âś“ ZatwierdĹş" przy kaĹĽdym zadaniu
+1. Zakładka "Do zatwierdzenia"
+2. Kliknij "✓ Zatwierdź" przy każdym zadaniu
 3. System automatycznie:
-   - Oceni czy dzieĹ„ jest PASSED
-   - Przyzna punkty (jeĹ›li wszystkie MIN zatwierdzone)
-   - Zaktualizuje passÄ™
+   - Oceni czy dzień jest PASSED
+   - Przyzna punkty (jeśli wszystkie MIN zatwierdzone)
+   - Zaktualizuje passę
    - Sprawdzi nagrody
 
-## đź“± Instalacja jako PWA (Progressive Web App)
+## 📱 Instalacja jako PWA (Progressive Web App)
 
 ### Na Komputerze (Chrome/Edge):
-1. OtwĂłrz `family-manager.html` w przeglÄ…darce
-2. Kliknij ikonÄ™ instalacji w pasku adresu (âž• lub komputer)
+1. Otwórz `family-manager.html` w przeglądarce
+2. Kliknij ikonę instalacji w pasku adresu (➕ lub komputer)
 3. Kliknij "Instaluj"
-4. Aplikacja pojawi siÄ™ jako osobne okno
+4. Aplikacja pojawi się jako osobne okno
 
 ### Na iOS (iPhone/iPad):
-1. OtwĂłrz w Safari
-2. Kliknij przycisk "UdostÄ™pnij" (kwadrat ze strzaĹ‚kÄ…)
-3. PrzewiĹ„ i wybierz "Dodaj do ekranu gĹ‚Ăłwnego"
-4. Nadaj nazwÄ™ i kliknij "Dodaj"
-5. Ikona đźŹ  pojawi siÄ™ na ekranie gĹ‚Ăłwnym
+1. Otwórz w Safari
+2. Kliknij przycisk "Udostępnij" (kwadrat ze strzałką)
+3. Przewiń i wybierz "Dodaj do ekranu głównego"
+4. Nadaj nazwę i kliknij "Dodaj"
+5. Ikona 🏠 pojawi się na ekranie głównym
 
 ### Na Androidzie:
-1. OtwĂłrz w Chrome
-2. Menu (â‹®) â†’ "Dodaj do ekranu gĹ‚Ăłwnego"
-3. PotwierdĹş
-4. Ikona pojawi siÄ™ na ekranie gĹ‚Ăłwnym
+1. Otwórz w Chrome
+2. Menu (⋮) → "Dodaj do ekranu głównego"
+3. Potwierdź
+4. Ikona pojawi się na ekranie głównym
 
-## âšˇ Szybkie WskazĂłwki
+## ⚡ Szybkie Wskazówki
 
 ### Dla Dzieci:
-- **Zaznaczaj zadania** kaĹĽdego dnia
-- **Sprawdzaj status dnia** - czy jest zaliczony (âś… PASSED)
-- **Buduj passÄ™** - kolejne dni zaliczone
+- **Zaznaczaj zadania** każdego dnia
+- **Sprawdzaj status dnia** - czy jest zaliczony (✅ PASSED)
+- **Buduj passę** - kolejne dni zaliczone
 - **Odblokowuj nagrody** - zbieraj punkty i buduj idealne tygodnie
 
-### Dla RodzicĂłw:
-- **Zatwierdzaj zadania** kaĹĽdego dnia (zakĹ‚adka "Do zatwierdzenia")
-- **Monitoruj postÄ™py** w zakĹ‚adce "Dzieci"
-- **Wydawaj nagrody** w zakĹ‚adce "Nagrody" (przycisk "Wydano")
+### Dla Rodziców:
+- **Zatwierdzaj zadania** każdego dnia (zakładka "Do zatwierdzenia")
+- **Monitoruj postępy** w zakładce "Dzieci"
+- **Wydawaj nagrody** w zakładce "Nagrody" (przycisk "Wydano")
 - **Dostosuj zadania** - edytuj w kodzie lub localStorage
 
-## đźŽŻ Kluczowe Zasady
+## 🎯 Kluczowe Zasady
 
 ### System 100%/0%
-- DzieĹ„ jest **ZALICZONY** gdy wszystkie zadania MIN sÄ… zatwierdzone
-- DzieĹ„ jest **NIEZALICZONY** gdy choÄ‡ 1 MIN brakuje
-- Dni nieaktywne (weekend) = **N/A** (nie liczÄ… siÄ™, nie przerywajÄ… passy)
+- Dzień jest **ZALICZONY** gdy wszystkie zadania MIN są zatwierdzone
+- Dzień jest **NIEZALICZONY** gdy choć 1 MIN brakuje
+- Dni nieaktywne (weekend) = **N/A** (nie liczą się, nie przerywają passy)
 
 ### Punkty
-- **5 punktĂłw** za kaĹĽdy zaliczony dzieĹ„
-- **20 punktĂłw bonusu** za idealny tydzieĹ„ (wszystkie dni aktywne PASSED)
-- Punkty przyznawane **tylko raz** za dzieĹ„ (anty-dublowanie)
-- **Brak punktĂłw** za pojedyncze zadania
+- **5 punktów** za każdy zaliczony dzień
+- **20 punktów bonusu** za idealny tydzień (wszystkie dni aktywne PASSED)
+- Punkty przyznawane **tylko raz** za dzień (anty-dublowanie)
+- **Brak punktów** za pojedyncze zadania
 
 ### Passa
 - Liczba **kolejnych dni aktywnych** ze statusem PASSED
-- Dni N/A **nie przerywajÄ…** passy
-- FAILED **resetuje** passÄ™ do 0
+- Dni N/A **nie przerywają** passy
+- FAILED **resetuje** passę do 0
 
 ### Nagrody
 Odblokowanie gdy:
-- Punkty osiÄ…gnÄ… prĂłg (np. 30, 60, 90)
-- Passa osiÄ…gnie cel (np. 7 dni)
-- Idealne tygodnie z rzÄ™du (np. 2)
+- Punkty osiągną próg (np. 30, 60, 90)
+- Passa osiągnie cel (np. 7 dni)
+- Idealne tygodnie z rzędu (np. 2)
 
-## đź› ď¸Ź Dostosowywanie
+## 🛠️ Dostosowywanie
 
 ### Zmien PIN administratora:
 Wejdz do: `Panel Administratora -> Ustawienia -> Parametry Punktow`.
@@ -108,85 +108,85 @@ W tym samym miejscu ustawisz:
 - Bonus za idealny tydzien
 
 ### Dodaj dziecko:
-WejdĹş do localStorage w devtools lub edytuj kod w sekcji `getInitialData()`.
+Wejdź do localStorage w devtools lub edytuj kod w sekcji `getInitialData()`.
 
-### ZmieĹ„ dni aktywne:
+### Zmień dni aktywne:
 ```javascript
 activeDays: [1, 2, 3, 4, 5] // 1=Pn, 2=Wt, ..., 7=Nd
 ```
 
-## đź”Ť Debugowanie
+## 🔍 Debugowanie
 
-### SprawdĹş localStorage:
-1. OtwĂłrz DevTools (F12)
-2. ZakĹ‚adka "Application" â†’ "Local Storage"
-3. ZnajdĹş klucz `familyManagerData`
-4. MoĹĽesz edytowaÄ‡ JSON rÄ™cznie
+### Sprawdź localStorage:
+1. Otwórz DevTools (F12)
+2. Zakładka "Application" → "Local Storage"
+3. Znajdź klucz `familyManagerData`
+4. Możesz edytować JSON ręcznie
 
 ### Reset danych:
-W konsoli przeglÄ…darki:
+W konsoli przeglądarki:
 ```javascript
 localStorage.removeItem('familyManagerData');
 location.reload();
 ```
 
-### SprawdĹş logi:
-OtwĂłrz konsolÄ™ (F12) i sprawdĹş komunikaty.
+### Sprawdź logi:
+Otwórz konsolę (F12) i sprawdź komunikaty.
 
-## đź“Š PrzykĹ‚adowy Harmonogram
+## 📊 Przykładowy Harmonogram
 
-### DzieĹ„ 1 (PoniedziaĹ‚ek):
+### Dzień 1 (Poniedziałek):
 - Dziecko zaznacza wykonane zadania
 - Rodzic zatwierdza wieczorem
-- System przyznaje punkty jeĹ›li wszystkie MIN âś“
-- Status dnia: PASSED â†’ Passa: 1
+- System przyznaje punkty jeśli wszystkie MIN ✓
+- Status dnia: PASSED → Passa: 1
 
-### DzieĹ„ 7 (Niedziela):
-- N/A (dzieĹ„ nieaktywny)
-- Passa nie resetuje siÄ™
-- Brak punktĂłw (normalnie)
+### Dzień 7 (Niedziela):
+- N/A (dzień nieaktywny)
+- Passa nie resetuje się
+- Brak punktów (normalnie)
 
-### TydzieĹ„ 2:
+### Tydzień 2:
 - Wszystkie dni Pn-Pt PASSED
-- System wykrywa idealny tydzieĹ„
-- Bonus +20 punktĂłw
-- MoĹĽliwe odblokowanie nagrody
+- System wykrywa idealny tydzień
+- Bonus +20 punktów
+- Możliwe odblokowanie nagrody
 
-## âś… Checklist Pierwszego Uruchomienia
+## ✅ Checklist Pierwszego Uruchomienia
 
-- [ ] OtwĂłrz `family-manager.html`
-- [ ] Przetestuj wybĂłr profilu
-- [ ] Zaznacz kilka zadaĹ„ jako dziecko
+- [ ] Otwórz `family-manager.html`
+- [ ] Przetestuj wybór profilu
+- [ ] Zaznacz kilka zadań jako dziecko
 - [ ] Odblokuj panel admina (PIN: 1234)
-- [ ] ZatwierdĹş zadania
-- [ ] SprawdĹş czy punkty siÄ™ przyznaĹ‚y
-- [ ] SprawdĹş passÄ™ i status dnia
+- [ ] Zatwierdź zadania
+- [ ] Sprawdź czy punkty się przyznały
+- [ ] Sprawdź passę i status dnia
 - [ ] (Opcjonalnie) Zainstaluj jako PWA
 
-## đź† Problemy?
+## 🆘 Problemy?
 
-### Aplikacja nie dziaĹ‚a:
-- SprawdĹş czy masz poĹ‚Ä…czenie z internetem (CDN dla bibliotek)
-- SprawdĹş konsolÄ™ przeglÄ…darki (F12)
-- Upewnij siÄ™ ĹĽe uĹĽywasz nowoczesnej przeglÄ…darki
+### Aplikacja nie działa:
+- Sprawdź czy masz połączenie z internetem (CDN dla bibliotek)
+- Sprawdź konsolę przeglądarki (F12)
+- Upewnij się że używasz nowoczesnej przeglądarki
 
-### Punkty siÄ™ nie przyznajÄ…:
-- SprawdĹş czy **wszystkie** zadania MIN sÄ… zatwierdzone
-- SprawdĹş czy dzieĹ„ jest aktywny (nie weekend jeĹ›li aktywne sÄ… Pn-Pt)
-- SprawdĹş localStorage czy `dayPointsGranted` nie blokuje
+### Punkty się nie przyznają:
+- Sprawdź czy **wszystkie** zadania MIN są zatwierdzone
+- Sprawdź czy dzień jest aktywny (nie weekend jeśli aktywne są Pn-Pt)
+- Sprawdź localStorage czy `dayPointsGranted` nie blokuje
 
-### Passa siÄ™ resetuje:
-- SprawdĹş czy ktĂłryĹ› z dni aktywnych nie byĹ‚ FAILED
-- Dni N/A nie resetujÄ… passy
+### Passa się resetuje:
+- Sprawdź czy któryś z dni aktywnych nie był FAILED
+- Dni N/A nie resetują passy
 
-## đź“ž Wsparcie
+## 📞 Wsparcie
 
-Aplikacja jest open source i moĹĽna jÄ… dowolnie modyfikowaÄ‡.
-Wszystkie funkcje sÄ… w jednym pliku HTML dla Ĺ‚atwoĹ›ci edycji.
+Aplikacja jest open source i można ją dowolnie modyfikować.
+Wszystkie funkcje są w jednym pliku HTML dla łatwości edycji.
 
 ---
 
-**MiĹ‚ego korzystania z Family Manager! đźŹ âś¨**
+**Miłego korzystania z Family Manager! 🏠✨**
 
 ## Railway (deploy w 5 minut)
 
@@ -202,8 +202,9 @@ npm start
 ```
 Otworz `http://localhost:3000`.
 
-## WaĹĽne: punkty i PIN
+## Ważne: punkty i PIN
 
 Punkty za dzien, bonus tygodniowy i PIN admina zmieniasz teraz w aplikacji:
 `Panel Administratora -> Ustawienia -> Parametry Punktow`.
+
 

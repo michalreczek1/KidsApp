@@ -1,53 +1,53 @@
-﻿# Family Manager - System ZarzÄ…dzania RodzinÄ…
+﻿# Family Manager - System Zarządzania Rodziną
 
-## đźŽŻ Opis Projektu
+## 🎯 Opis Projektu
 
-Family Manager to nowoczesna aplikacja webowa typu PWA (Progressive Web App) do zarzÄ…dzania zadaniami i nagrodami dla dzieci. System oparty jest na filozofii 100%/0% - dzieĹ„ jest albo zaliczony (PASSED) albo niezaliczony (FAILED), bez procentĂłw i pĂłĹ‚Ĺ›rodkĂłw.
+Family Manager to nowoczesna aplikacja webowa typu PWA (Progressive Web App) do zarządzania zadaniami i nagrodami dla dzieci. System oparty jest na filozofii 100%/0% - dzień jest albo zaliczony (PASSED) albo niezaliczony (FAILED), bez procentów i półśrodków.
 
-## âś¨ Kluczowe Funkcje
+## ✨ Kluczowe Funkcje
 
 ### System 100%/0%
-- **PASSED**: DzieĹ„ aktywny z wszystkimi zadaniami MIN zatwierdzonymi
-- **FAILED**: DzieĹ„ aktywny z przynajmniej jednym niezatwierdzonym zadaniem MIN
-- **N/A**: DzieĹ„ nieaktywny (nie wpĹ‚ywa na passÄ™)
+- **PASSED**: Dzień aktywny z wszystkimi zadaniami MIN zatwierdzonymi
+- **FAILED**: Dzień aktywny z przynajmniej jednym niezatwierdzonym zadaniem MIN
+- **N/A**: Dzień nieaktywny (nie wpływa na passę)
 
-### Mechanika PunktĂłw (Opcja C)
-- Punkty przyznawane **TYLKO** za zaliczony dzieĹ„ (PASSED)
-- DomyĹ›lnie: 5 punktĂłw za dzieĹ„ PASSED
-- Anty-dublowanie: punkty za ten sam dzieĹ„ tylko raz
-- Brak punktĂłw za pojedyncze zadania
-- Bonus za idealny tydzieĹ„: 20 punktĂłw (opcjonalny)
+### Mechanika Punktów (Opcja C)
+- Punkty przyznawane **TYLKO** za zaliczony dzień (PASSED)
+- Domyślnie: 5 punktów za dzień PASSED
+- Anty-dublowanie: punkty za ten sam dzień tylko raz
+- Brak punktów za pojedyncze zadania
+- Bonus za idealny tydzień: 20 punktów (opcjonalny)
 
-### System ZadaĹ„
-- **MIN (â­ Minimum)**: Zadania obowiÄ…zkowe - decydujÄ… o zaliczeniu dnia
-- **PLUS (đź’Ž Bonus)**: Zadania opcjonalne - nie wpĹ‚ywajÄ… na zaliczenie
-- **WEEKLY (đźŹ† Tygodniowe)**: Zadania tygodniowe - nie wpĹ‚ywajÄ… na zaliczenie
+### System Zadań
+- **MIN (⭐ Minimum)**: Zadania obowiązkowe - decydują o zaliczeniu dnia
+- **PLUS (💎 Bonus)**: Zadania opcjonalne - nie wpływają na zaliczenie
+- **WEEKLY (🏆 Tygodniowe)**: Zadania tygodniowe - nie wpływają na zaliczenie
 
 ### Passa (Streak)
 - Liczba kolejnych dni aktywnych ze statusem PASSED
-- Dni N/A nie przerywajÄ… passy
+- Dni N/A nie przerywają passy
 - Reset do 0 przy pierwszym FAILED
 
-### Idealny TydzieĹ„
-- TydzieĹ„ jest IDEAL gdy wszystkie dni aktywne majÄ… status PASSED
-- WymĂłg: 100% dni aktywnych musi byÄ‡ PASSED (zero tolerancji)
-- Zliczanie idealnych tygodni oraz idealnych tygodni z rzÄ™du
+### Idealny Tydzień
+- Tydzień jest IDEAL gdy wszystkie dni aktywne mają status PASSED
+- Wymóg: 100% dni aktywnych musi być PASSED (zero tolerancji)
+- Zliczanie idealnych tygodni oraz idealnych tygodni z rzędu
 
-### System NagrĂłd
+### System Nagród
 - Odblokowanie na podstawie:
-  - Progu punktowego (np. 30, 60, 90 punktĂłw)
-  - Passy (np. 7 dni z rzÄ™du)
-  - Idealnych tygodni z rzÄ™du (np. 2 idealne tygodnie)
-- PeĹ‚noekranowy komunikat po odblokowaniu
-- OdbiĂłr u rodzica (przycisk "Wydano")
-- Historia nagrĂłd (unlockedAt, claimedAt)
+  - Progu punktowego (np. 30, 60, 90 punktów)
+  - Passy (np. 7 dni z rzędu)
+  - Idealnych tygodni z rzędu (np. 2 idealne tygodnie)
+- Pełnoekranowy komunikat po odblokowaniu
+- Odbiór u rodzica (przycisk "Wydano")
+- Historia nagród (unlockedAt, claimedAt)
 
 ### Cel Rodzinny
-- WspĂłlny cel dla caĹ‚ej rodziny
-- Pasek postÄ™pu na podstawie sumy punktĂłw
+- Wspólny cel dla całej rodziny
+- Pasek postępu na podstawie sumy punktów
 - Konfigurowalny przez rodzica
 
-## đźŽ¨ Design
+## 🎨 Design
 
 ### Estetyka Glassmorphism
 - Przezroczyste karty z efektem rozmycia (backdrop-filter)
@@ -56,39 +56,39 @@ Family Manager to nowoczesna aplikacja webowa typu PWA (Progressive Web App) do 
 - Responsywny design
 
 ### Animacje
-- Fade-in dla widokĂłw
+- Fade-in dla widoków
 - Hover effects na kartach
-- Konfetti przy odblokowaniu nagrĂłd
-- Efekty dĹşwiÄ™kowe przy zatwierdzaniu
+- Konfetti przy odblokowaniu nagród
+- Efekty dźwiękowe przy zatwierdzaniu
 
-## đź“± Widoki Aplikacji
+## 📱 Widoki Aplikacji
 
 ### 1. Ekran Startowy (Home)
-- WybĂłr profilu dziecka (kafelki z awatarem)
+- Wybór profilu dziecka (kafelki z awatarem)
 - Przycisk do rankingu
-- Pasek postÄ™pu celu rodzinnego
-- Ukryty dostÄ™p do panelu admina (dĹ‚ugie przytrzymanie logo)
+- Pasek postępu celu rodzinnego
+- Ukryty dostęp do panelu admina (długie przytrzymanie logo)
 
 ### 2. Panel Dziecka
 - Status dzisiejszego dnia (PASSED/FAILED/N/A)
 - Statystyki: passa, punkty, idealne tygodnie
-- Lista dzisiejszych zadaĹ„ do odznaczenia
+- Lista dzisiejszych zadań do odznaczenia
 - Kalendarz ostatnich 30 dni
-- Lista odblokowanych nagrĂłd
+- Lista odblokowanych nagród
 
 ### 3. Panel Administratora (PIN: 1234)
-ZakĹ‚adki:
-- **Do zatwierdzenia**: Zadania czekajÄ…ce na akceptacjÄ™
-- **Dzieci**: Statystyki i zarzÄ…dzanie profilami
+Zakładki:
+- **Do zatwierdzenia**: Zadania czekające na akceptację
+- **Dzieci**: Statystyki i zarządzanie profilami
 - **Nagrody**: Odblokowane nagrody do wydania (przycisk "Wydano")
 
 ### 4. Ranking (Leaderboard)
-Sortowanie wedĹ‚ug:
-1. Idealnych tygodni z rzÄ™du
+Sortowanie według:
+1. Idealnych tygodni z rzędu
 2. Passy (streak)
-3. PunktĂłw
+3. Punktów
 
-## đź”§ Technologia
+## 🔧 Technologia
 
 ### Stack Technologiczny
 - **Frontend**: React 18 (przez CDN)
@@ -106,82 +106,82 @@ Sortowanie wedĹ‚ug:
 - localStorage jako baza danych
 - Czysty JavaScript (Babel dla JSX)
 
-## đź§Ş Test Cases - Walidacja Logiki
+## 🧪 Test Cases - Walidacja Logiki
 
-### A. Logika 100%/0% (bez procentĂłw)
+### A. Logika 100%/0% (bez procentów)
 
-#### Test 1: DzieĹ„ aktywny, czÄ™Ĺ›ciowe wykonanie MIN
+#### Test 1: Dzień aktywny, częściowe wykonanie MIN
 **Scenariusz**: 
-- DzieĹ„ aktywny, 3 zadania MIN
+- Dzień aktywny, 3 zadania MIN
 - Zatwierdzone 2/3 zadania MIN
 
 **Oczekiwany rezultat**:
 - Status dnia: FAILED
-- Punkty za dzieĹ„: 0
+- Punkty za dzień: 0
 - Passa: 0 (lub reset)
 - UI nie pokazuje "66%" ani "prawie zaliczone"
 
-#### Test 2: DzieĹ„ nieaktywny (N/A)
+#### Test 2: Dzień nieaktywny (N/A)
 **Scenariusz**:
-- DzieĹ„ nieaktywny (np. sobota gdy aktywne sÄ… Pn-Pt)
+- Dzień nieaktywny (np. sobota gdy aktywne są Pn-Pt)
 - Jakiekolwiek zadania
 
 **Oczekiwany rezultat**:
 - Status dnia: N/A
 - Passa NIE jest resetowana
-- PrzykĹ‚ad: Pt PASSED, Sob N/A, Nd N/A, Pn PASSED â†’ passa kontynuuje
+- Przykład: Pt PASSED, Sob N/A, Nd N/A, Pn PASSED → passa kontynuuje
 
-### B. Przyznawanie punktĂłw tylko za PASSED dzieĹ„
+### B. Przyznawanie punktów tylko za PASSED dzień
 
 #### Test 3: Zmiana dnia z FAILED na PASSED
 **Scenariusz**:
-- DzieĹ„ poczÄ…tkowo FAILED (2/3 MIN)
+- Dzień początkowo FAILED (2/3 MIN)
 - Rodzic zatwierdza ostatni MIN
 
 **Oczekiwany rezultat**:
-- Status dnia zmienia siÄ™ na PASSED
+- Status dnia zmienia się na PASSED
 - Natychmiast przyznawane POINTS_PER_PASSED_DAY (+5)
 - Wpis w pointsLedger typu "day_passed"
-- Konfetti + dĹşwiÄ™k sukcesu
+- Konfetti + dźwięk sukcesu
 
-#### Test 4: Anty-dublowanie punktĂłw
+#### Test 4: Anty-dublowanie punktów
 **Scenariusz**:
-- DzieĹ„ juĹĽ PASSED
-- UĹĽytkownik odĹ›wieĹĽa stronÄ™ / wchodzi ponownie
+- Dzień już PASSED
+- Użytkownik odświeża stronę / wchodzi ponownie
 - Rodzic klika wielokrotnie
 
 **Oczekiwany rezultat**:
 - Punkty przyznane tylko raz
 - dayPointsGranted[date] = true zapobiega duplikatom
-- Total points nie zwiÄ™ksza siÄ™ ponownie
+- Total points nie zwiększa się ponownie
 
-#### Test 5: Brak punktĂłw za samo oznaczenie zadania
+#### Test 5: Brak punktów za samo oznaczenie zadania
 **Scenariusz**:
 - Dziecko oznacza MIN jako doneByChild=true
 - Brak akceptacji rodzica
 
 **Oczekiwany rezultat**:
-- 0 punktĂłw
+- 0 punktów
 - Status dnia pozostaje FAILED
 - Zadanie widoczne w kolejce do zatwierdzenia
 
 ### C. Passa (streak) - twarda logika
 
-#### Test 6: Passa roĹ›nie tylko od PASSED dni aktywnych
+#### Test 6: Passa rośnie tylko od PASSED dni aktywnych
 **Scenariusz**:
 - Pn PASSED
 - Wt PASSED
-- Ĺšr FAILED
+- Śr FAILED
 - Czw PASSED
 
 **Oczekiwany rezultat**:
 - Po Pn: streak = 1
 - Po Wt: streak = 2
-- Po Ĺšr: streak = 0 (reset)
+- Po Śr: streak = 0 (reset)
 - Po Czw: streak = 1
-- Nie wolno liczyÄ‡ doneByChild ani N/A
+- Nie wolno liczyć doneByChild ani N/A
 
-#### Test 7: Dni nieaktywne nie resetujÄ… passy
+#### Test 7: Dni nieaktywne nie resetują passy
 **Scenariusz**:
 - Pt PASSED (streak=3)
 - Sob N/A
@@ -190,93 +190,93 @@ Sortowanie wedĹ‚ug:
 
 **Oczekiwany rezultat**:
 - Streak po Pn: 4
-- N/A nie przerywa ciÄ…gĹ‚oĹ›ci
+- N/A nie przerywa ciągłości
 
-### D. Idealny tydzieĹ„ (0/1) i bonus
+### D. Idealny tydzień (0/1) i bonus
 
-#### Test 8: Idealny tydzieĹ„ = 100% aktywnych PASSED
+#### Test 8: Idealny tydzień = 100% aktywnych PASSED
 **Scenariusz**:
 - Aktywne dni: Pn-Pt
-- 1 dzieĹ„ z tygodnia FAILED
+- 1 dzień z tygodnia FAILED
 
 **Oczekiwany rezultat**:
-- TydzieĹ„ NIE jest idealny
+- Tydzień NIE jest idealny
 - Brak bonusu IDEAL_WEEK
 - Nie wolno "prawie idealny"
 
 #### Test 9: Bonus IDEAL_WEEK przyznawany raz
 **Scenariusz**:
 - Wszystkie dni Pn-Pt PASSED
-- TydzieĹ„ staje siÄ™ IDEAL
+- Tydzień staje się IDEAL
 
 **Oczekiwany rezultat**:
-- Bonus +20 punktĂłw przyznany raz
+- Bonus +20 punktów przyznany raz
 - weekBonusGranted[weekStart] = true
-- OdĹ›wieĹĽenie nie dodaje bonusu ponownie
+- Odświeżenie nie dodaje bonusu ponownie
 
-### E. Odblokowanie nagrĂłd
+### E. Odblokowanie nagród
 
-#### Test 10: Nagroda progowa punktĂłw
+#### Test 10: Nagroda progowa punktów
 **Scenariusz**:
-- pointsTotal przekracza prĂłg (np. 30)
+- pointsTotal przekracza próg (np. 30)
 
 **Oczekiwany rezultat**:
-- Nagroda odblokowana dokĹ‚adnie raz
-- PeĹ‚noekranowy modal z komunikatem
-- Konfetti + dĹşwiÄ™k
+- Nagroda odblokowana dokładnie raz
+- Pełnoekranowy modal z komunikatem
+- Konfetti + dźwięk
 - Nagroda w unlockedRewards
-- Rodzic moĹĽe kliknÄ…Ä‡ "Wydano"
+- Rodzic może kliknąć "Wydano"
 
-#### Test 11: Nagroda za passÄ™ / idealne tygodnie
+#### Test 11: Nagroda za passę / idealne tygodnie
 **Scenariusz**:
 - Wymaganie: streakDays >= 7
 - LUB idealWeeksInRow >= 2
 
 **Oczekiwany rezultat**:
-- Odblokowanie dopiero przy osiÄ…gniÄ™ciu warunku
-- Nie wolno "1.5 tygodnia" ani przybliĹĽenia
+- Odblokowanie dopiero przy osiągnięciu warunku
+- Nie wolno "1.5 tygodnia" ani przybliżenia
 - Twarde 0/1
 
 ### F. Reset dzienny / zmiana daty
 
-#### Test 12: Nowy dzieĹ„
+#### Test 12: Nowy dzień
 **Scenariusz**:
-- Zmiana daty na nastÄ™pny dzieĹ„
+- Zmiana daty na następny dzień
 
 **Oczekiwany rezultat**:
 - Nowa struktura statusu dnia
 - Ocena poprzedniego dnia zachowana
-- DzieĹ„ FAILED moĹĽe przejĹ›Ä‡ na PASSED jeĹ›li rodzic uzupeĹ‚ni
-- Punkty nadal tylko raz za dzieĹ„
+- Dzień FAILED może przejść na PASSED jeśli rodzic uzupełni
+- Punkty nadal tylko raz za dzień
 
-### G. ZgodnoĹ›Ä‡ UI
+### G. Zgodność UI
 
-#### Test 13: UI bez procentĂłw
+#### Test 13: UI bez procentów
 **Oczekiwany rezultat**:
 - Panel dziecka pokazuje tylko PASSED/FAILED/N/A
-- Brak komunikatĂłw "90% w tym tygodniu"
+- Brak komunikatów "90% w tym tygodniu"
 - Tylko passa, punkty, idealne tygodnie
 
 #### Test 14: Kolejka do akceptacji
 **Oczekiwany rezultat**:
 - Admin widzi zadania doneByChild=true i approvedByParent=false
 - Zatwierdzenie aktualizuje status dnia
-- Ewentualne przyznanie punktĂłw
+- Ewentualne przyznanie punktów
 
-## đź“‹ Dane Startowe
+## 📋 Dane Startowe
 
 Przy pierwszym uruchomieniu (pusta localStorage):
-- 2 przykĹ‚adowe profile dzieci (Leo đź¦, Mia đź¦„)
+- 2 przykładowe profile dzieci (Leo 🦁, Mia 🦄)
 - Dni aktywne: Pn-Pt
-- 6 przykĹ‚adowych zadaĹ„ (MIN i PLUS)
-- 5 przykĹ‚adowych nagrĂłd (progi: 30, 60, 90 punktĂłw, passa 7, idealne tygodnie 2)
-- Cel rodzinny: "WyjĹ›cie na pizzÄ™" (200 punktĂłw)
+- 6 przykładowych zadań (MIN i PLUS)
+- 5 przykładowych nagród (progi: 30, 60, 90 punktów, passa 7, idealne tygodnie 2)
+- Cel rodzinny: "Wyjście na pizzę" (200 punktów)
 
-## đźš€ Uruchomienie
+## 🚀 Uruchomienie
 
-### Opcja 1: BezpoĹ›rednio w przeglÄ…darce
-1. OtwĂłrz plik `family-manager.html` w przeglÄ…darce
-2. Aplikacja dziaĹ‚a bez serwera (wszystkie zaleĹĽnoĹ›ci z CDN)
+### Opcja 1: Bezpośrednio w przeglądarce
+1. Otwórz plik `family-manager.html` w przeglądarce
+2. Aplikacja działa bez serwera (wszystkie zależności z CDN)
 
 ### Opcja 2: Z serwerem lokalnym
 ```bash
@@ -291,17 +291,17 @@ php -S localhost:8000
 ```
 
 ### Opcja 3: PWA Installation
-1. OtwĂłrz w Chrome/Edge/Safari
-2. Kliknij ikonÄ™ instalacji w pasku adresu
-3. Aplikacja dziaĹ‚a offline
+1. Otwórz w Chrome/Edge/Safari
+2. Kliknij ikonę instalacji w pasku adresu
+3. Aplikacja działa offline
 
-## đź” DostÄ™p Administratora
+## 🔐 Dostęp Administratora
 
-- Metoda: DĹ‚ugie przytrzymanie logo đźŹ  (2 sekundy)
+- Metoda: Długie przytrzymanie logo 🏠 (2 sekundy)
 - PIN: **1234**
 - PIN mozesz zmienic w: `Panel Administratora -> Ustawienia -> Parametry Punktow`
 
-## đź“Š Struktura Danych (localStorage)
+## 📊 Struktura Danych (localStorage)
 
 ```javascript
 {
@@ -319,27 +319,27 @@ php -S localhost:8000
 }
 ```
 
-## đźŽŻ Kluczowe Funkcje Logiki
+## 🎯 Kluczowe Funkcje Logiki
 
 ### `evaluateDay(childData, date, completions, tasks)`
 Zwraca status dnia: 'PASSED' | 'FAILED' | 'N/A'
 
 ### `grantDayPointsIfNeeded(childData, date, dayStatus, updateChild)`
-Przyznaje punkty za PASSED dzieĹ„ (z anty-dublowaniem)
+Przyznaje punkty za PASSED dzień (z anty-dublowaniem)
 
 ### `calculateStreak(childData, today, completions, tasks)`
-Oblicza passÄ™ (kolejne dni PASSED)
+Oblicza passę (kolejne dni PASSED)
 
 ### `evaluateWeek(childData, weekStart, completions, tasks, updateChild)`
-Sprawdza czy tydzieĹ„ jest IDEAL i przyznaje bonus
+Sprawdza czy tydzień jest IDEAL i przyznaje bonus
 
 ### `calculateIdealWeeksInRow(childData, today, completions, tasks)`
-Oblicza idealne tygodnie z rzÄ™du
+Oblicza idealne tygodnie z rzędu
 
 ### `checkRewards(childData, rewards, updateChild, showRewardModal)`
 Sprawdza warunki i odblokowuje nagrody
 
-## đźŽ¨ Customizacja
+## 🎨 Customizacja
 
 ### Kolory
 Edytuj zmienne CSS w sekcji `:root`:
@@ -356,19 +356,19 @@ W aplikacji przejdz do:
 `Panel Administratora -> Ustawienia -> Parametry Punktow`
 i zapisz zmiany.
 
-## đź“± ResponsywnoĹ›Ä‡
+## 📱 Responsywność
 
 - Desktop: Full layout z kartami
 - Tablet: Grid dostosowany
 - Mobile: Single column, dotyk
 
-## đź”Š Funkcje Multimedialne
+## 🔊 Funkcje Multimedialne
 
-- **DĹşwiÄ™k sukcesu**: Web Audio API (generowany ton)
+- **Dźwięk sukcesu**: Web Audio API (generowany ton)
 - **Konfetti**: Canvas Confetti library
 - **Animacje**: CSS transitions + keyframes
 
-## đźŚ KompatybilnoĹ›Ä‡
+## 🌐 Kompatybilność
 
 - Chrome/Edge 90+
 - Firefox 88+
@@ -376,32 +376,32 @@ i zapisz zmiany.
 - iOS Safari 14+
 - Android Chrome 90+
 
-## đź“ť Licencja
+## 📝 Licencja
 
-Open source - moĹĽesz swobodnie modyfikowaÄ‡ i dostosowywaÄ‡.
+Open source - możesz swobodnie modyfikować i dostosowywać.
 
-## đź¤ť Wsparcie
+## 🤝 Wsparcie
 
-Aplikacja jest w peĹ‚ni funkcjonalna i gotowa do uĹĽycia.
-Wszystkie test cases zostaĹ‚y zaimplementowane zgodnie z wymaganiami.
+Aplikacja jest w pełni funkcjonalna i gotowa do użycia.
+Wszystkie test cases zostały zaimplementowane zgodnie z wymaganiami.
 
-## âś… Status Implementacji
+## ✅ Status Implementacji
 
-- âś… System 100%/0% (PASSED/FAILED/N/A)
-- âś… Punkty tylko za PASSED dzieĹ„ (Opcja C)
-- âś… Anty-dublowanie punktĂłw
-- âś… Passa (streak) z ignorowaniem N/A
-- âś… Idealny tydzieĹ„ (0/1)
-- âś… Bonus za idealny tydzieĹ„
-- âś… System nagrĂłd (progi + odblokowanie)
-- âś… Cel rodzinny
-- âś… Panel dziecka (bez procentĂłw)
-- âś… Panel admina (kolejka zatwierdzeĹ„)
-- âś… Ranking (idealne tygodnie â†’ passa â†’ punkty)
-- âś… Glassmorphism design
-- âś… PWA support
-- âś… Animacje i dĹşwiÄ™ki
-- âś… Wszystkie test cases
+- ✅ System 100%/0% (PASSED/FAILED/N/A)
+- ✅ Punkty tylko za PASSED dzień (Opcja C)
+- ✅ Anty-dublowanie punktów
+- ✅ Passa (streak) z ignorowaniem N/A
+- ✅ Idealny tydzień (0/1)
+- ✅ Bonus za idealny tydzień
+- ✅ System nagród (progi + odblokowanie)
+- ✅ Cel rodzinny
+- ✅ Panel dziecka (bez procentów)
+- ✅ Panel admina (kolejka zatwierdzeń)
+- ✅ Ranking (idealne tygodnie → passa → punkty)
+- ✅ Glassmorphism design
+- ✅ PWA support
+- ✅ Animacje i dźwięki
+- ✅ Wszystkie test cases
 
 ---
 
@@ -440,5 +440,6 @@ Nie trzeba juz edytowac kodu HTML, zeby zmienic:
 - PIN administratora.
 
 Zmienisz to w aplikacji: `Panel Administratora -> Ustawienia -> Parametry Punktow`, a potem `Zapisz Ustawienia`.
+
 
 
